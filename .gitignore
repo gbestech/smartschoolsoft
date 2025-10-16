@@ -1,0 +1,43 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+# Django
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Database
+*.sqlite3
+*.db
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Static files (if collected)
+staticfiles/
+mediafiles/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Django migrations (optional - some prefer to include them)
+# !/migrations/
+# /migrations/*.py
+# !/migrations/__init__.py
