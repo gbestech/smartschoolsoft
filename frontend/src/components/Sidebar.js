@@ -45,14 +45,15 @@ const Sidebar = () => {
                 { path: '/admin/products/analytics', label: 'Analytics', key: 'analytics' },
                 { path: '/admin/products/add', label: 'Add New', key: 'add-product' },
                 { path: '/orders', label: 'Order', key: 'order' },
-                { path: '/debtors', label: 'Debtor', key: 'debtor' },
+                
 
             ]
 
         },
         { path: '/reports', icon: '📈', label: 'Reports', key: 'reports' },
         { path: '/admin/settings', icon: '⚙️', label: 'System Settings', key: 'settings' },
-        { path: '/admin/logs', icon: '📋', label: 'Activity Logs', key: 'logs' },
+        { path: '/logs', icon: '📋', label: 'Activity Logs', key: 'logs' },
+        { path: '/debtors', label: 'Debtors', key: 'debtor' },
     ];
 
     const commonMenuItems = [

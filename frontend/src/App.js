@@ -30,6 +30,7 @@ import Reports from './pages/Report';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import DebtorList from './pages/DebtorList';
+import ActivityLogs from './pages/ActivityLogs';
 
 function App() {
   return (
@@ -257,17 +258,11 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             } />
-            <Route path="/admin/logs" element={
+            <Route path="/logs" element={
               <ProtectedRoute adminOnly={true}>
                 <DashboardLayout>
                   <div className="p-6">
-                    <div className="mb-6">
-                      <h1 className="text-2xl font-bold text-gray-800">Activity Logs</h1>
-                      <p className="text-gray-600 mt-1">View system activity and audit logs</p>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                      <p className="text-gray-600">Activity Logs page content will go here.</p>
-                    </div>
+                   <ActivityLogs/>
                   </div>
                 </DashboardLayout>
               </ProtectedRoute>
