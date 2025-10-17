@@ -1,7 +1,7 @@
 // import React, { useEffect, useState } from "react";
 // import axios from "axios";
 // import { toWords } from "number-to-words";
-
+// import { toast } from 'react-toastify';
 // const Orders = () => {
 //     const [products, setProducts] = useState([]);
 //     const [sales, setSales] = useState([]);
@@ -13,7 +13,7 @@
 //     const [salesError, setSalesError] = useState(null);
 //     const [showModal, setShowModal] = useState(false);
 //     const [viewModal, setViewModal] = useState(null);
-    
+
 //     // Customer Info
 //     const [customerName, setCustomerName] = useState("");
 //     const [address, setAddress] = useState("");
@@ -31,48 +31,45 @@
 //     const totalInWords = total > 0 ? `${toWords(total)} Naira Only` : "";
 
 //     // Fetch products
-//     useEffect(() => {
-//         const fetchProducts = async () => {
-//             try {
-//                 setLoading(true);
-//                 const token = localStorage.getItem('token');
-//                 const response = await axios.get("http://127.0.0.1:8000/api/products/", {
-//                     headers: {
-//                         'Authorization': `Token ${token}`
-//                     }
-//                 });
-//                 setProducts(response.data);
-//             } catch (err) {
-//                 console.error("Error fetching products:", err);
-//                 setError(`Failed to load products. ${err.response?.data?.detail || err.message}`);
-//             } finally {
-//                 setLoading(false);
-//             }
-//         };
-
-//         fetchProducts();
-//     }, []);
+//     const fetchProducts = async () => {
+//         try {
+//             setLoading(true);
+//             const token = localStorage.getItem('token');
+//             const response = await axios.get("http://127.0.0.1:8000/api/products/", {
+//                 headers: {
+//                     'Authorization': `Token ${token}`
+//                 }
+//             });
+//             setProducts(response.data);
+//         } catch (err) {
+//             console.error("Error fetching products:", err);
+//             setError(`Failed to load products. ${err.response?.data?.detail || err.message}`);
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
 
 //     // Fetch sales list
-//     useEffect(() => {
-//         const fetchSales = async () => {
-//             try {
-//                 setSalesLoading(true);
-//                 const token = localStorage.getItem('token');
-//                 const response = await axios.get("http://127.0.0.1:8000/api/sales/sales/", {
-//                     headers: {
-//                         'Authorization': `Token ${token}`
-//                     }
-//                 });
-//                 setSales(response.data);
-//             } catch (err) {
-//                 console.error("Error fetching sales:", err);
-//                 setSalesError(`Failed to load sales list. ${err.response?.data?.detail || err.message}`);
-//             } finally {
-//                 setSalesLoading(false);
-//             }
-//         };
+//     const fetchSales = async () => {
+//         try {
+//             setSalesLoading(true);
+//             const token = localStorage.getItem('token');
+//             const response = await axios.get("http://127.0.0.1:8000/api/sales/sales/", {
+//                 headers: {
+//                     'Authorization': `Token ${token}`
+//                 }
+//             });
+//             setSales(response.data);
+//         } catch (err) {
+//             console.error("Error fetching sales:", err);
+//             setSalesError(`Failed to load sales list. ${err.response?.data?.detail || err.message}`);
+//         } finally {
+//             setSalesLoading(false);
+//         }
+//     };
 
+//     useEffect(() => {
+//         fetchProducts();
 //         fetchSales();
 //     }, []);
 
@@ -151,37 +148,45 @@
 //         setShowModal(true);
 //     };
 
-//     // Confirm sale
+//     // Confirm sale - FIXED VERSION
 //     const confirmSale = async () => {
 //         try {
 //             const token = localStorage.getItem('token');
+
+//             // Use actual form values, not hardcoded ones
 //             const saleData = {
-//                 customer_name: "customerName",
-//                 address: address || "Not provided",
-//                 phone :'090123456',
-//                 gender: 'Default',
+//                 customer_name: customerName,  // FIXED: Use actual customer name
+//                 address: address || "Not provided",  // FIXED: Use actual address
+//                 phone: phone,  // FIXED: Use actual phone
+//                 gender: gender || "",  // FIXED: Use actual gender or empty string
 //                 date: saleDate,
-//                 total: parseFloat(total),
 //                 amount_paid: Number(amountPaid) || 0,
-//                 balance: parseFloat(balance),
 //                 items: cart.map((item) => ({
-//                 product: item.id,
-//                 quantity: item.qty,
-//                 price: parseFloat(item.price),
+//                     product: item.id,
+//                     qty: item.qty,  // FIXED: Changed from 'quantity' to 'qty'
+//                     price: parseFloat(item.price),
 //                 })),
 //             };
 
 //             console.log("Submitting sale:", saleData);
 
-//             const response = await axios.post("http://127.0.0.1:8000/api/sales/sales/", saleData, {
-//                 headers: {
-//                     'Authorization': `Token ${token}`,
-//                     'Content-Type': 'application/json'
+//             const response = await axios.post(
+//                 "http://127.0.0.1:8000/api/sales/sales/",
+//                 saleData,
+//                 {
+//                     headers: {
+//                         'Authorization': `Token ${token}`,
+//                         'Content-Type': 'application/json'
+//                     }
 //                 }
-//             });
+//             );
+
+//             console.log("Sale created successfully:", response.data);
 
 //             alert("Sale recorded successfully!");
 //             setShowModal(false);
+
+//             // Clear form
 //             setCart([]);
 //             setCustomerName("");
 //             setAddress("");
@@ -190,17 +195,16 @@
 //             setAmountPaid("");
 //             setSaleDate(new Date().toISOString().slice(0, 10));
 
-//             // Refresh sales list
-//             const salesResponse = await axios.get("http://127.0.0.1:8000/api/sales/sales/", {
-//                 headers: {
-//                     'Authorization': `Token ${token}`
-//                 }
-//             });
-//             setSales(salesResponse.data);
+//             // Refresh both sales list and products (to show updated quantities)
+//             await fetchSales();
+//             await fetchProducts();
 
 //         } catch (err) {
 //             console.error("Sale creation error:", err);
-//             alert(`Failed to create sale: ${err.response?.data?.detail || err.message || 'Unknown error'}`);
+//             const errorMessage = err.response?.data
+//                 ? JSON.stringify(err.response.data)
+//                 : err.message || 'Unknown error';
+//             alert(`Failed to create sale: ${errorMessage}`);
 //         }
 //     };
 
@@ -713,7 +717,7 @@
 //                                         {viewModal.items.map((item, index) => (
 //                                             <div key={index} className="flex justify-between text-sm">
 //                                                 <span>{item.product_name || `Product ${item.product}`}</span>
-//                                                 <span>{item.quantity} × ₦{Number(item.price).toLocaleString()}</span>
+//                                                 <span>{item.qty} × ₦{Number(item.price).toLocaleString()}</span>
 //                                             </div>
 //                                         ))}
 //                                     </div>
@@ -740,6 +744,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toWords } from "number-to-words";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Orders = () => {
     const [products, setProducts] = useState([]);
@@ -752,6 +758,8 @@ const Orders = () => {
     const [salesError, setSalesError] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [viewModal, setViewModal] = useState(null);
+    const [updateBalanceModal, setUpdateBalanceModal] = useState(null);
+    const [newPayment, setNewPayment] = useState("");
 
     // Customer Info
     const [customerName, setCustomerName] = useState("");
@@ -783,6 +791,7 @@ const Orders = () => {
         } catch (err) {
             console.error("Error fetching products:", err);
             setError(`Failed to load products. ${err.response?.data?.detail || err.message}`);
+            toast.error(`Failed to load products. ${err.response?.data?.detail || err.message}`);
         } finally {
             setLoading(false);
         }
@@ -802,6 +811,7 @@ const Orders = () => {
         } catch (err) {
             console.error("Error fetching sales:", err);
             setSalesError(`Failed to load sales list. ${err.response?.data?.detail || err.message}`);
+            toast.error(`Failed to load sales list. ${err.response?.data?.detail || err.message}`);
         } finally {
             setSalesLoading(false);
         }
@@ -815,19 +825,19 @@ const Orders = () => {
     // Add to cart
     const handleAdd = () => {
         if (!selectedId) {
-            alert("Please select a product first.");
+            toast.warning("Please select a product first.");
             return;
         }
         const product = products.find((p) => p.id === parseInt(selectedId));
         if (!product) {
-            alert("Product not found.");
+            toast.error("Product not found.");
             return;
         }
 
         const existing = cart.find((item) => item.id === product.id);
         if (existing) {
             if (existing.qty >= product.quantity) {
-                alert(`You cannot add more than ${product.quantity} of ${product.name}`);
+                toast.warning(`You cannot add more than ${product.quantity} of ${product.name}`);
                 return;
             }
             setCart(
@@ -835,9 +845,10 @@ const Orders = () => {
                     item.id === product.id ? { ...item, qty: item.qty + 1 } : item
                 )
             );
+            toast.success(`Updated ${product.name} quantity`);
         } else {
             if (product.quantity <= 0) {
-                alert(`${product.name} is out of stock.`);
+                toast.error(`${product.name} is out of stock.`);
                 return;
             }
             setCart([...cart, {
@@ -845,8 +856,9 @@ const Orders = () => {
                 qty: 1,
                 price: product.selling_price || product.price
             }]);
+            toast.success(`${product.name} added to cart`);
         }
-        setSelectedId(""); // Reset selection
+        setSelectedId("");
     };
 
     // Change quantity
@@ -857,7 +869,7 @@ const Orders = () => {
             cart.map((item) => {
                 if (item.id === id) {
                     if (newQty > item.quantity) {
-                        alert(`Only ${item.quantity} available for ${item.name}`);
+                        toast.warning(`Only ${item.quantity} available for ${item.name}`);
                         return item;
                     }
                     return { ...item, qty: newQty };
@@ -868,41 +880,44 @@ const Orders = () => {
     };
 
     // Remove product
-    const handleRemove = (id) => setCart(cart.filter((item) => item.id !== id));
+    const handleRemove = (id) => {
+        const product = cart.find(item => item.id === id);
+        setCart(cart.filter((item) => item.id !== id));
+        toast.info(`${product?.name} removed from cart`);
+    };
 
     // Submit sale
     const handleSubmit = () => {
         if (!customerName.trim()) {
-            alert("Please enter customer name.");
+            toast.error("Please enter customer name.");
             return;
         }
         if (!phone.trim()) {
-            alert("Please enter phone number.");
+            toast.error("Please enter phone number.");
             return;
         }
         if (cart.length === 0) {
-            alert("Cart is empty!");
+            toast.error("Cart is empty!");
             return;
         }
         setShowModal(true);
     };
 
-    // Confirm sale - FIXED VERSION
+    // Confirm sale
     const confirmSale = async () => {
         try {
             const token = localStorage.getItem('token');
 
-            // Use actual form values, not hardcoded ones
             const saleData = {
-                customer_name: customerName,  // FIXED: Use actual customer name
-                address: address || "Not provided",  // FIXED: Use actual address
-                phone: phone,  // FIXED: Use actual phone
-                gender: gender || "",  // FIXED: Use actual gender or empty string
+                customer_name: customerName,
+                address: address || "Not provided",
+                phone: phone,
+                gender: gender || "",
                 date: saleDate,
                 amount_paid: Number(amountPaid) || 0,
                 items: cart.map((item) => ({
                     product: item.id,
-                    qty: item.qty,  // FIXED: Changed from 'quantity' to 'qty'
+                    qty: item.qty,
                     price: parseFloat(item.price),
                 })),
             };
@@ -922,10 +937,13 @@ const Orders = () => {
 
             console.log("Sale created successfully:", response.data);
 
-            alert("Sale recorded successfully!");
             setShowModal(false);
 
-            // Clear form
+            toast.success("🎉 Sale recorded successfully!", {
+                position: "top-center",
+                autoClose: 2000,
+            });
+
             setCart([]);
             setCustomerName("");
             setAddress("");
@@ -934,7 +952,6 @@ const Orders = () => {
             setAmountPaid("");
             setSaleDate(new Date().toISOString().slice(0, 10));
 
-            // Refresh both sales list and products (to show updated quantities)
             await fetchSales();
             await fetchProducts();
 
@@ -943,7 +960,44 @@ const Orders = () => {
             const errorMessage = err.response?.data
                 ? JSON.stringify(err.response.data)
                 : err.message || 'Unknown error';
-            alert(`Failed to create sale: ${errorMessage}`);
+            toast.error(`Failed to create sale: ${errorMessage}`);
+        }
+    };
+
+    // Update balance
+    const handleUpdateBalance = async () => {
+        if (!newPayment || Number(newPayment) <= 0) {
+            toast.error("Please enter a valid payment amount.");
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const updatedAmountPaid = Number(updateBalanceModal.amount_paid) + Number(newPayment);
+            const updatedBalance = Math.max(Number(updateBalanceModal.total) - updatedAmountPaid, 0);
+
+            await axios.patch(
+                `http://127.0.0.1:8000/api/sales/sales/${updateBalanceModal.id}/`,
+                {
+                    amount_paid: updatedAmountPaid,
+                    balance: updatedBalance
+                },
+                {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            toast.success("💰 Balance updated successfully!");
+            setUpdateBalanceModal(null);
+            setNewPayment("");
+            await fetchSales();
+
+        } catch (err) {
+            console.error("Update balance error:", err);
+            toast.error(`Failed to update balance: ${err.response?.data?.detail || err.message}`);
         }
     };
 
@@ -958,12 +1012,199 @@ const Orders = () => {
                     'Authorization': `Token ${token}`
                 }
             });
-            alert("Sale deleted successfully!");
-            setSales(sales.filter((s) => s.id !== id));
+
+            toast.success("🗑️ Sale deleted successfully!");
+
+            setSales(prevSales => prevSales.filter((s) => s.id !== id));
+
+            await fetchSales();
+
         } catch (err) {
             console.error("Delete error:", err);
-            alert(`Failed to delete sale: ${err.response?.data?.detail || err.message}`);
+            toast.error(`Failed to delete sale: ${err.response?.data?.detail || err.message}`);
         }
+    };
+
+    // Print receipt
+    const handlePrint = (sale) => {
+        const printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Receipt - ${sale.customer_name}</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 20px;
+                            max-width: 800px;
+                            margin: 0 auto;
+                        }
+                        .header {
+                            text-align: center;
+                            border-bottom: 2px solid #333;
+                            padding-bottom: 20px;
+                            margin-bottom: 20px;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            color: #333;
+                        }
+                        .info-section {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 10px;
+                            margin-bottom: 30px;
+                        }
+                        .info-item {
+                            padding: 10px;
+                            background: #f5f5f5;
+                            border-radius: 5px;
+                        }
+                        .info-label {
+                            font-weight: bold;
+                            color: #666;
+                            font-size: 12px;
+                        }
+                        .info-value {
+                            font-size: 16px;
+                            color: #333;
+                            margin-top: 5px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 20px;
+                        }
+                        th, td {
+                            padding: 12px;
+                            text-align: left;
+                            border-bottom: 1px solid #ddd;
+                        }
+                        th {
+                            background-color: #333;
+                            color: white;
+                            font-weight: bold;
+                        }
+                        .totals {
+                            float: right;
+                            width: 300px;
+                        }
+                        .total-row {
+                            display: flex;
+                            justify-content: space-between;
+                            padding: 10px;
+                            font-size: 18px;
+                        }
+                        .total-row.grand {
+                            background: #333;
+                            color: white;
+                            font-weight: bold;
+                            font-size: 20px;
+                        }
+                        .total-row.paid {
+                            background: #4CAF50;
+                            color: white;
+                            font-weight: bold;
+                        }
+                        .total-row.balance {
+                            background: #FF9800;
+                            color: white;
+                            font-weight: bold;
+                        }
+                        .footer {
+                            margin-top: 50px;
+                            text-align: center;
+                            border-top: 2px solid #333;
+                            padding-top: 20px;
+                            color: #666;
+                        }
+                        @media print {
+                            .no-print {
+                                display: none;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>SALES RECEIPT</h1>
+                        <p>Receipt #${sale.id}</p>
+                        <p>Date: ${new Date(sale.date).toLocaleDateString()}</p>
+                    </div>
+
+                    <div class="info-section">
+                        <div class="info-item">
+                            <div class="info-label">Customer Name</div>
+                            <div class="info-value">${sale.customer_name}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Phone Number</div>
+                            <div class="info-value">${sale.phone}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Address</div>
+                            <div class="info-value">${sale.address || 'N/A'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Gender</div>
+                            <div class="info-value">${sale.gender || 'N/A'}</div>
+                        </div>
+                    </div>
+
+                    ${sale.items && sale.items.length > 0 ? `
+                        <h3>Items Purchased</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${sale.items.map(item => `
+                                    <tr>
+                                        <td>${item.product_name || `Product ${item.product}`}</td>
+                                        <td>${item.qty}</td>
+                                        <td>₦${Number(item.price).toLocaleString()}</td>
+                                        <td>₦${Number(item.qty * item.price).toLocaleString()}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    ` : ''}
+
+                    <div class="totals">
+                        <div class="total-row grand">
+                            <span>Total Amount:</span>
+                            <span>₦${Number(sale.total).toLocaleString()}</span>
+                        </div>
+                        <div class="total-row paid">
+                            <span>Amount Paid:</span>
+                            <span>₦${Number(sale.amount_paid).toLocaleString()}</span>
+                        </div>
+                        <div class="total-row balance">
+                            <span>Balance:</span>
+                            <span>₦${Number(sale.balance).toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <div style="clear: both;"></div>
+
+                    <div class="footer">
+                        <p><strong>Thank you for your business!</strong></p>
+                        <p>This is a computer-generated receipt.</p>
+                    </div>
+
+                    <div class="no-print" style="text-align: center; margin-top: 30px;">
+                        <button onclick="window.print()" style="padding: 10px 30px; font-size: 16px; background: #333; color: white; border: none; border-radius: 5px; cursor: pointer;">Print Receipt</button>
+                        <button onclick="window.close()" style="padding: 10px 30px; font-size: 16px; background: #666; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Close</button>
+                    </div>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
     };
 
     const totalPages = Math.ceil(sales.length / perPage);
@@ -1000,16 +1241,26 @@ const Orders = () => {
 
     return (
         <div className="p-6 w-full">
-            {/* Header */}
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-800">Sales Management</h1>
                 <p className="text-gray-600 mt-2">Process sales and manage customer orders</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left Column - Sales Form */}
                 <div className="space-y-6">
-                    {/* Customer Details Card */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <h3 className="text-xl font-semibold text-gray-800 mb-4">Customer Information</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1079,7 +1330,6 @@ const Orders = () => {
                         </div>
                     </div>
 
-                    {/* Product Selection Card */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <h3 className="text-xl font-semibold text-gray-800 mb-4">Add Products</h3>
                         <div className="flex gap-3">
@@ -1105,7 +1355,6 @@ const Orders = () => {
                         </div>
                     </div>
 
-                    {/* Cart Card */}
                     {cart.length > 0 && (
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <div className="flex justify-between items-center mb-4">
@@ -1179,7 +1428,6 @@ const Orders = () => {
                                 </table>
                             </div>
 
-                            {/* Cart Summary */}
                             <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                                 <div className="flex justify-between items-center mb-2">
                                     <span className="text-lg font-semibold text-gray-800">Total Amount:</span>
@@ -1201,7 +1449,6 @@ const Orders = () => {
                     )}
                 </div>
 
-                {/* Right Column - Sales History */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-xl font-semibold text-gray-800">Sales History</h3>
@@ -1273,13 +1520,21 @@ const Orders = () => {
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    <div className="flex space-x-2">
+                                                    <div className="flex flex-col space-y-1">
                                                         <button
                                                             onClick={() => setViewModal(sale)}
                                                             className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded transition-colors text-xs"
                                                         >
                                                             View
                                                         </button>
+                                                        {sale.balance > 0 && (
+                                                            <button
+                                                                onClick={() => setUpdateBalanceModal(sale)}
+                                                                className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded transition-colors text-xs"
+                                                            >
+                                                                Update Balance
+                                                            </button>
+                                                        )}
                                                         <button
                                                             onClick={() => handleDelete(sale.id)}
                                                             className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition-colors text-xs"
@@ -1294,7 +1549,6 @@ const Orders = () => {
                                 </table>
                             </div>
 
-                            {/* Pagination */}
                             {totalPages > 1 && (
                                 <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
                                     <div className="text-sm text-gray-500">
@@ -1334,7 +1588,6 @@ const Orders = () => {
                 </div>
             </div>
 
-            {/* Confirm Sale Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-lg w-full max-w-md">
@@ -1405,7 +1658,77 @@ const Orders = () => {
                 </div>
             )}
 
-            {/* View Sale Details Modal */}
+            {updateBalanceModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-lg w-full max-w-md">
+                        <div className="p-6 border-b border-gray-200">
+                            <h3 className="text-xl font-semibold text-gray-800">Update Balance</h3>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div className="bg-gray-50 p-4 rounded-lg">
+                                <div className="flex justify-between mb-2">
+                                    <span className="text-gray-600">Customer:</span>
+                                    <span className="font-medium">{updateBalanceModal.customer_name}</span>
+                                </div>
+                                <div className="flex justify-between mb-2">
+                                    <span className="text-gray-600">Total Amount:</span>
+                                    <span className="font-medium">₦{Number(updateBalanceModal.total).toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between mb-2">
+                                    <span className="text-gray-600">Already Paid:</span>
+                                    <span className="text-green-600 font-medium">₦{Number(updateBalanceModal.amount_paid).toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Current Balance:</span>
+                                    <span className="text-orange-600 font-bold">₦{Number(updateBalanceModal.balance).toLocaleString()}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Additional Payment Amount
+                                </label>
+                                <input
+                                    type="number"
+                                    value={newPayment}
+                                    onChange={(e) => setNewPayment(e.target.value)}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                    placeholder="Enter payment amount"
+                                    min="0"
+                                    max={updateBalanceModal.balance}
+                                />
+                            </div>
+                            {newPayment && (
+                                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <div className="flex justify-between">
+                                        <span className="text-green-800 font-medium">New Balance:</span>
+                                        <span className="text-green-800 font-bold">
+                                            ₦{Math.max(Number(updateBalanceModal.balance) - Number(newPayment), 0).toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex gap-3 p-6 border-t border-gray-200">
+                            <button
+                                onClick={() => {
+                                    setUpdateBalanceModal(null);
+                                    setNewPayment("");
+                                }}
+                                className="flex-1 bg-gray-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleUpdateBalance}
+                                className="flex-1 bg-green-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors"
+                            >
+                                Update Balance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {viewModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-lg w-full max-w-md">
@@ -1463,10 +1786,16 @@ const Orders = () => {
                                 </div>
                             )}
                         </div>
-                        <div className="p-6 border-t border-gray-200">
+                        <div className="flex gap-3 p-6 border-t border-gray-200">
+                            <button
+                                onClick={() => handlePrint(viewModal)}
+                                className="flex-1 bg-blue-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+                            >
+                                🖨️ Print Receipt
+                            </button>
                             <button
                                 onClick={() => setViewModal(null)}
-                                className="w-full bg-gray-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+                                className="flex-1 bg-gray-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-gray-600 transition-colors"
                             >
                                 Close
                             </button>

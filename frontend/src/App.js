@@ -27,10 +27,24 @@ import Stocking from './components/Stocking';
 import EditProduct from './pages/EditProduct';
 import Orders from './components/Orders';
 import Reports from './pages/Report';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
+import DebtorList from './pages/DebtorList';
 
 function App() {
   return (
+
     <AuthProvider>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="colored"
+      />
       <Router>
         <div className="App min-h-screen bg-gray-50">
           <Routes>
@@ -97,6 +111,13 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <Orders />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/debtors" element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <DebtorList />
                 </DashboardLayout>
               </ProtectedRoute>
             } />
@@ -217,7 +238,7 @@ function App() {
             <Route path="/reports" element={
               <ProtectedRoute adminOnly={true}>
                 <DashboardLayout>
-                 <Reports/>
+                  <Reports />
                 </DashboardLayout>
               </ProtectedRoute>
             } />
