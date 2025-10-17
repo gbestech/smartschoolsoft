@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -29,7 +30,7 @@ const Login = () => {
         const result = await login(formData.username, formData.password);
 
         if (result.success) {
-            toast.success('Login successful! Redirecting...', {
+            toast.success('✅ Login successful! Redirecting...', {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -38,9 +39,10 @@ const Login = () => {
                 draggable: true,
                 theme: "colored",
             });
-            navigate('/dashboard');
+
+            setTimeout(() => navigate('/dashboard'), 3000);
         } else {
-            const errorMessage = result.error?.detail || 'Login failed. Please check your credentials.';
+            const errorMessage = result.error?.detail || '❌ Login failed. Please check your credentials.';
             setError(errorMessage);
             toast.error(errorMessage, {
                 position: "top-right",
@@ -58,22 +60,20 @@ const Login = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Toastify container */}
+            <ToastContainer />
+
             {/* Background Image with Overlay */}
             <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                style={{
-                    backgroundImage: `url('/backgroundImage.jpg')`
-                }}
+                style={{ backgroundImage: `url('/backgroundImage.jpg')` }}
             >
-                {/* Dark Overlay for better text readability */}
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
-                {/* Animated Circles */}
                 <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-400 rounded-full mix-blend-overlay filter blur-xl opacity-30 animate-pulse"></div>
                 <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-purple-400 rounded-full mix-blend-overlay filter blur-xl opacity-30 animate-pulse" style={{ animationDelay: '2000ms' }}></div>
                 <div className="absolute bottom-1/4 left-1/2 w-64 h-64 bg-indigo-400 rounded-full mix-blend-overlay filter blur-xl opacity-30 animate-pulse" style={{ animationDelay: '4000ms' }}></div>
 
-                {/* Grid Pattern Overlay */}
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute inset-0" style={{
                         backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
@@ -82,7 +82,6 @@ const Login = () => {
                     }}></div>
                 </div>
 
-                {/* Floating Particles */}
                 <div className="absolute inset-0">
                     {[...Array(15)].map((_, i) => (
                         <div
@@ -99,10 +98,9 @@ const Login = () => {
                 </div>
             </div>
 
-            {/* Content */}
+            {/* Login Content */}
             <div className="relative w-full max-w-md">
                 <div className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl p-8">
-                    {/* Header */}
                     <div className="text-center mb-8">
                         <div className="flex items-center justify-center mb-4">
                             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -115,7 +113,7 @@ const Login = () => {
                         <p className="text-gray-600 mt-2">Sign in to your account</p>
                     </div>
 
-                    {/* Error Message */}
+                    {/* Error Box */}
                     {error && (
                         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center animate-shake">
                             <div className="flex-shrink-0">
@@ -136,8 +134,8 @@ const Login = () => {
                                 Username
                             </label>
                             <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-colors group-focus-within:text-blue-500">
-                                    <span className="text-gray-400 group-focus-within:text-blue-500">👤</span>
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span className="text-gray-400">👤</span>
                                 </div>
                                 <input
                                     type="text"
@@ -157,8 +155,8 @@ const Login = () => {
                                 Password
                             </label>
                             <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-colors group-focus-within:text-blue-500">
-                                    <span className="text-gray-400 group-focus-within:text-blue-500">🔒</span>
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span className="text-gray-400">🔒</span>
                                 </div>
                                 <input
                                     type="password"
@@ -175,13 +173,10 @@ const Login = () => {
 
                         <div className="flex items-center justify-between">
                             <label className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors"
-                                />
+                                <input type="checkbox" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
                                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
                             </label>
-                            <a href="#forgot" className="text-sm text-blue-600 hover:text-blue-500 transition-colors font-medium">
+                            <a href="#forgot" className="text-sm text-blue-600 hover:text-blue-500 font-medium">
                                 Forgot password?
                             </a>
                         </div>
@@ -189,7 +184,7 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:ring-4 focus:ring-blue-200 focus:outline-none transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center shadow-lg"
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:ring-4 focus:ring-blue-200 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg"
                         >
                             {loading ? (
                                 <>
@@ -205,14 +200,10 @@ const Login = () => {
                         </button>
                     </form>
 
-                    {/* Footer */}
                     <div className="mt-8 text-center">
                         <p className="text-gray-600">
                             Don't have an account?{' '}
-                            <Link
-                                to="/register"
-                                className="text-blue-600 hover:text-blue-500 font-medium transition-colors hover:underline"
-                            >
+                            <Link to="/register" className="text-blue-600 hover:text-blue-500 font-medium hover:underline">
                                 Create an account
                             </Link>
                         </p>
@@ -220,29 +211,18 @@ const Login = () => {
                 </div>
             </div>
 
-            {/* Add custom styles for animations */}
             <style>{`
                 @keyframes float {
-                    0%, 100% { 
-                        transform: translateY(0px) rotate(0deg); 
-                    }
-                    50% { 
-                        transform: translateY(-20px) rotate(180deg); 
-                    }
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-20px) rotate(180deg); }
                 }
                 .animate-shake {
                     animation: shake 0.5s ease-in-out;
                 }
                 @keyframes shake {
-                    0%, 100% { 
-                        transform: translateX(0); 
-                    }
-                    25% { 
-                        transform: translateX(-5px); 
-                    }
-                    75% { 
-                        transform: translateX(5px); 
-                    }
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-5px); }
+                    75% { transform: translateX(5px); }
                 }
             `}</style>
         </div>
