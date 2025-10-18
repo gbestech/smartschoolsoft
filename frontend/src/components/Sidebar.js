@@ -52,8 +52,9 @@ const Sidebar = () => {
         },
         { path: '/reports', icon: '📈', label: 'Reports', key: 'reports' },
         { path: '/admin/settings', icon: '⚙️', label: 'System Settings', key: 'settings' },
-        { path: '/logs', icon: '📋', label: 'Activity Logs', key: 'logs' },
+        { path: '/activitylogs', icon: '📋', label: 'Activity Logs', key: 'activitylogs' },
         { path: '/debtors', label: 'Debtors', key: 'debtor' },
+        { path: '/customerReport', label: 'Customer Report', key: 'reprot' },
     ];
 
     const commonMenuItems = [

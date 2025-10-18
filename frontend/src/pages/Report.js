@@ -2,15 +2,50 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 // ===== Individual Report Components =====
-const SalesReport = ({ data }) => {
-    // Debug: Check what data actually contains
-    console.log('SalesReport data:', data);
+const CategoryReport = ({ data }) => (
+    <div>
+        <h3 className="text-lg font-semibold mb-4">Category Report</h3>
+        <div className="text-center py-8 text-gray-500">
+            {data?.message || "Category report not implemented yet"}
+        </div>
+    </div>
+);
 
-    // Handle cases where data might not be an array
+const CustomerReport = ({ data }) => (
+    <div>
+        <h3 className="text-lg font-semibold mb-4">Customer Report</h3>
+        <div className="text-center py-8 text-gray-500">
+            {data?.message || "Customer report not implemented yet"}
+        </div>
+    </div>
+);
+
+const ProfitReport = ({ data }) => (
+    <div>
+        <h3 className="text-lg font-semibold mb-4">Profit Report</h3>
+        <div className="text-center py-8 text-gray-500">
+            {data?.message || "Profit report not implemented yet"}
+        </div>
+    </div>
+);
+
+const RevenueReport = ({ data }) => (
+    <div>
+        <h3 className="text-lg font-semibold mb-4">Revenue Report</h3>
+        <div className="text-center py-8 text-gray-500">
+            {data?.message || "Revenue report not implemented yet"}
+        </div>
+    </div>
+);
+
+const SalesReport = ({ data, dateRange }) => {
+    console.log('SalesReport data:', data);
+    console.log('SalesReport dateRange:', dateRange);
+
     if (!data) {
         return (
             <div className="text-center py-8 text-gray-500">
-                No data available
+                No sales data available
             </div>
         );
     }
@@ -18,8 +53,11 @@ const SalesReport = ({ data }) => {
     if (!Array.isArray(data)) {
         return (
             <div className="text-center py-8 text-yellow-600">
-                Invalid data format. Expected array but got: {typeof data}
-                <pre className="text-xs mt-2 text-left">{JSON.stringify(data, null, 2)}</pre>
+                Invalid data format for Sales Report. Expected array but got: {typeof data}
+                <div className="text-xs mt-2 text-left bg-gray-100 p-2 rounded">
+                    This might be happening because the wrong data is being passed to the Sales Report.
+                    Please check the report generation logic.
+                </div>
             </div>
         );
     }
@@ -27,11 +65,12 @@ const SalesReport = ({ data }) => {
     if (data.length === 0) {
         return (
             <div className="text-center py-8 text-gray-500">
-                No sales data found for the selected date range
+                No sales data found for {dateRange.start} to {dateRange.end}
             </div>
         );
     }
 
+    // Calculate totals
     const totalSales = data.reduce((sum, sale) => sum + parseFloat(sale.total || 0), 0);
     const totalAmountPaid = data.reduce((sum, sale) => sum + parseFloat(sale.amount_paid || 0), 0);
     const totalBalance = data.reduce((sum, sale) => sum + parseFloat(sale.balance || 0), 0);
@@ -40,8 +79,28 @@ const SalesReport = ({ data }) => {
         return sum + items.reduce((itemSum, item) => itemSum + (item.qty || 0), 0);
     }, 0);
 
+    // Calculate daily breakdown
+    const dailyBreakdown = {};
+    data.forEach(sale => {
+        const date = sale.date;
+        if (!dailyBreakdown[date]) {
+            dailyBreakdown[date] = {
+                date,
+                transactions: 0,
+                totalSales: 0,
+                totalItems: 0
+            };
+        }
+        dailyBreakdown[date].transactions += 1;
+        dailyBreakdown[date].totalSales += parseFloat(sale.total || 0);
+        dailyBreakdown[date].totalItems += (sale.items || []).reduce((sum, item) => sum + (item.qty || 0), 0);
+    });
+
+    const dailyBreakdownArray = Object.values(dailyBreakdown).sort((a, b) => new Date(b.date) - new Date(a.date));
+
     return (
         <div>
+            {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">{data.length}</div>
@@ -61,105 +120,107 @@ const SalesReport = ({ data }) => {
                 </div>
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-4 py-2 text-left">Customer</th>
-                            <th className="px-4 py-2 text-left">Phone</th>
-                            <th className="px-4 py-2 text-left">Items</th>
-                            <th className="px-4 py-2 text-left">Total</th>
-                            <th className="px-4 py-2 text-left">Paid</th>
-                            <th className="px-4 py-2 text-left">Balance</th>
-                            <th className="px-4 py-2 text-left">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.map(sale => (
-                            <tr key={sale.id} className="border-b hover:bg-gray-50">
-                                <td className="px-4 py-2">
-                                    <div className="font-medium">{sale.customer_name || 'N/A'}</div>
-                                    <div className="text-xs text-gray-500">{sale.gender || 'N/A'}</div>
-                                </td>
-                                <td className="px-4 py-2">{sale.phone || 'N/A'}</td>
-                                <td className="px-4 py-2">
-                                    {(sale.items || []).map((item, index) => (
-                                        <div key={index} className="text-xs">
-                                            Item #{item.product} (Qty: {item.qty})
-                                        </div>
-                                    ))}
-                                </td>
-                                <td className="px-4 py-2 font-semibold">₦{parseFloat(sale.total || 0).toLocaleString()}</td>
-                                <td className="px-4 py-2 text-green-600">₦{parseFloat(sale.amount_paid || 0).toLocaleString()}</td>
-                                <td className="px-4 py-2">
-                                    <span className={parseFloat(sale.balance || 0) > 0 ? "text-red-600 font-semibold" : "text-green-600"}>
-                                        ₦{parseFloat(sale.balance || 0).toLocaleString()}
-                                    </span>
-                                </td>
-                                <td className="px-4 py-2">
-                                    <span className={`px-2 py-1 rounded-full text-xs ${parseFloat(sale.balance || 0) === 0
+            {/* Daily Breakdown */}
+            {dailyBreakdownArray.length > 1 && (
+                <div className="mb-6">
+                    <h4 className="text-lg font-semibold mb-3">Daily Breakdown</h4>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-4 py-2 text-left">Date</th>
+                                    <th className="px-4 py-2 text-left">Transactions</th>
+                                    <th className="px-4 py-2 text-left">Total Sales</th>
+                                    <th className="px-4 py-2 text-left">Items Sold</th>
+                                    <th className="px-4 py-2 text-left">Average per Transaction</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {dailyBreakdownArray.map(day => (
+                                    <tr key={day.date} className="border-b hover:bg-gray-50">
+                                        <td className="px-4 py-2 font-medium">{day.date}</td>
+                                        <td className="px-4 py-2">{day.transactions}</td>
+                                        <td className="px-4 py-2">₦{day.totalSales.toLocaleString()}</td>
+                                        <td className="px-4 py-2">{day.totalItems}</td>
+                                        <td className="px-4 py-2">
+                                            ₦{(day.totalSales / day.transactions).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Detailed Transactions */}
+            <div>
+                <h4 className="text-lg font-semibold mb-3">Detailed Transactions</h4>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-4 py-2 text-left">Date</th>
+                                <th className="px-4 py-2 text-left">Customer</th>
+                                <th className="px-4 py-2 text-left">Phone</th>
+                                <th className="px-4 py-2 text-left">Items</th>
+                                <th className="px-4 py-2 text-left">Total</th>
+                                <th className="px-4 py-2 text-left">Paid</th>
+                                <th className="px-4 py-2 text-left">Balance</th>
+                                <th className="px-4 py-2 text-left">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data.map(sale => (
+                                <tr key={sale.id} className="border-b hover:bg-gray-50">
+                                    <td className="px-4 py-2">{sale.date}</td>
+                                    <td className="px-4 py-2">
+                                        <div className="font-medium">{sale.customer_name || 'N/A'}</div>
+                                        <div className="text-xs text-gray-500">{sale.gender || 'N/A'}</div>
+                                    </td>
+                                    <td className="px-4 py-2">{sale.phone || 'N/A'}</td>
+                                    <td className="px-4 py-2">
+                                        {(sale.items || []).map((item, index) => (
+                                            <div key={index} className="text-xs">
+                                                Item #{item.product} (Qty: {item.qty})
+                                            </div>
+                                        ))}
+                                    </td>
+                                    <td className="px-4 py-2 font-semibold">₦{parseFloat(sale.total || 0).toLocaleString()}</td>
+                                    <td className="px-4 py-2 text-green-600">₦{parseFloat(sale.amount_paid || 0).toLocaleString()}</td>
+                                    <td className="px-4 py-2">
+                                        <span className={parseFloat(sale.balance || 0) > 0 ? "text-red-600 font-semibold" : "text-green-600"}>
+                                            ₦{parseFloat(sale.balance || 0).toLocaleString()}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <span className={`px-2 py-1 rounded-full text-xs ${parseFloat(sale.balance || 0) === 0
                                             ? "bg-green-100 text-green-800"
                                             : "bg-yellow-100 text-yellow-800"
-                                        }`}>
-                                        {parseFloat(sale.balance || 0) === 0 ? 'Paid' : 'Pending'}
-                                    </span>
-                                </td>
+                                            }`}>
+                                            {parseFloat(sale.balance || 0) === 0 ? 'Paid' : 'Pending'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                        <tfoot className="bg-gray-100 font-semibold">
+                            <tr>
+                                <td colSpan="4" className="px-4 py-2 text-right">Totals:</td>
+                                <td className="px-4 py-2">₦{totalSales.toLocaleString()}</td>
+                                <td className="px-4 py-2">₦{totalAmountPaid.toLocaleString()}</td>
+                                <td className="px-4 py-2">₦{totalBalance.toLocaleString()}</td>
+                                <td className="px-4 py-2"></td>
                             </tr>
-                        ))}
-                    </tbody>
-                    <tfoot className="bg-gray-100 font-semibold">
-                        <tr>
-                            <td colSpan="3" className="px-4 py-2 text-right">Totals:</td>
-                            <td className="px-4 py-2">₦{totalSales.toLocaleString()}</td>
-                            <td className="px-4 py-2">₦{totalAmountPaid.toLocaleString()}</td>
-                            <td className="px-4 py-2">₦{totalBalance.toLocaleString()}</td>
-                            <td className="px-4 py-2"></td>
-                        </tr>
-                    </tfoot>
-                </table>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
         </div>
     );
 };
 
-const ProfitReport = ({ data }) => (
-    <div>
-        <h3 className="text-lg font-semibold mb-4">Profit Report</h3>
-        <div className="text-center py-8 text-gray-500">
-            {data?.message || "Profit report not implemented yet"}
-        </div>
-    </div>
-);
-
-const CategoryReport = ({ data }) => (
-    <div>
-        <h3 className="text-lg font-semibold mb-4">Category Report</h3>
-        <div className="text-center py-8 text-gray-500">
-            {data?.message || "Category report not implemented yet"}
-        </div>
-    </div>
-);
-
-const RevenueReport = ({ data }) => (
-    <div>
-        <h3 className="text-lg font-semibold mb-4">Revenue Report</h3>
-        <div className="text-center py-8 text-gray-500">
-            {data?.message || "Revenue report not implemented yet"}
-        </div>
-    </div>
-);
-
-const CustomerReport = ({ data }) => (
-    <div>
-        <h3 className="text-lg font-semibold mb-4">Customer Report</h3>
-        <div className="text-center py-8 text-gray-500">
-            {data?.message || "Customer report not implemented yet"}
-        </div>
-    </div>
-);
-
 const StockReport = ({ data }) => {
-    // Debug: Check what data actually contains
     console.log('StockReport data:', data);
 
     if (!data) {
@@ -170,35 +231,42 @@ const StockReport = ({ data }) => {
         );
     }
 
+    // Check if this is actually stock data structure
+    if (!data.summary || !data.lowStock || !data.allProducts) {
+        return (
+            <div className="text-center py-8 text-yellow-600">
+                Invalid data format for Stock Report
+                <div className="text-xs mt-2 text-left bg-gray-100 p-2 rounded">
+                    Expected stock data structure but got different data.
+                    <pre>{JSON.stringify(data, null, 2)}</pre>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div>
             <h3 className="text-lg font-semibold mb-4">Stock Level Summary</h3>
 
-            {/* Check if summary exists */}
-            {data.summary ? (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">{data.summary.totalProducts || 0}</div>
-                        <div className="text-sm text-blue-800">Total Products</div>
-                    </div>
-                    <div className="bg-green-50 p-4 rounded-lg">
-                        <div className="text-2xl font-bold text-green-600">₦{(data.summary.totalInventoryValue || 0).toLocaleString()}</div>
-                        <div className="text-sm text-green-800">Inventory Value</div>
-                    </div>
-                    <div className="bg-red-50 p-4 rounded-lg">
-                        <div className="text-2xl font-bold text-red-600">{data.summary.outOfStock || 0}</div>
-                        <div className="text-sm text-red-800">Out of Stock</div>
-                    </div>
-                    <div className="bg-orange-50 p-4 rounded-lg">
-                        <div className="text-2xl font-bold text-orange-600">{data.summary.lowStock || 0}</div>
-                        <div className="text-sm text-orange-800">Low Stock</div>
-                    </div>
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{data.summary.totalProducts || 0}</div>
+                    <div className="text-sm text-blue-800">Total Products</div>
                 </div>
-            ) : (
-                <div className="text-center py-4 text-yellow-600">
-                    Summary data not available
+                <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">₦{(data.summary.totalInventoryValue || 0).toLocaleString()}</div>
+                    <div className="text-sm text-green-800">Inventory Value</div>
                 </div>
-            )}
+                <div className="bg-red-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-red-600">{data.summary.outOfStock || 0}</div>
+                    <div className="text-sm text-red-800">Out of Stock</div>
+                </div>
+                <div className="bg-orange-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600">{data.summary.lowStock || 0}</div>
+                    <div className="text-sm text-orange-800">Low Stock</div>
+                </div>
+            </div>
 
             {/* Low stock products table */}
             {data.lowStock && data.lowStock.length > 0 ? (
@@ -231,8 +299,8 @@ const StockReport = ({ data }) => {
                                         <td className="px-4 py-2">₦{(parseFloat(product.price || 0) * product.quantity).toLocaleString()}</td>
                                         <td className="px-4 py-2">
                                             <span className={`px-2 py-1 rounded-full text-xs ${product.quantity === 0
-                                                    ? 'bg-red-100 text-red-800'
-                                                    : 'bg-orange-100 text-orange-800'
+                                                ? 'bg-red-100 text-red-800'
+                                                : 'bg-orange-100 text-orange-800'
                                                 }`}>
                                                 {product.quantity === 0 ? 'Out of Stock' : 'Low Stock'}
                                             </span>
@@ -252,7 +320,7 @@ const StockReport = ({ data }) => {
             {/* All products inventory */}
             {data.allProducts && data.allProducts.length > 0 && (
                 <div className="mt-8">
-                    <h4 className="font-semibold mb-3">Complete Inventory</h4>
+                    <h4 className="font-semibold mb-3">Complete Inventory ({data.allProducts.length} products)</h4>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-gray-50">
@@ -272,10 +340,10 @@ const StockReport = ({ data }) => {
                                         <td className="px-4 py-2">{product.category}</td>
                                         <td className="px-4 py-2">
                                             <span className={`font-semibold ${product.quantity === 0
-                                                    ? 'text-red-600'
-                                                    : product.quantity < 5
-                                                        ? 'text-orange-600'
-                                                        : 'text-green-600'
+                                                ? 'text-red-600'
+                                                : product.quantity < 5
+                                                    ? 'text-orange-600'
+                                                    : 'text-green-600'
                                                 }`}>
                                                 {product.quantity}
                                             </span>
@@ -284,10 +352,10 @@ const StockReport = ({ data }) => {
                                         <td className="px-4 py-2">₦{(parseFloat(product.price || 0) * product.quantity).toLocaleString()}</td>
                                         <td className="px-4 py-2">
                                             <span className={`px-2 py-1 rounded-full text-xs ${product.quantity === 0
-                                                    ? 'bg-red-100 text-red-800'
-                                                    : product.quantity < 5
-                                                        ? 'bg-orange-100 text-orange-800'
-                                                        : 'bg-green-100 text-green-800'
+                                                ? 'bg-red-100 text-red-800'
+                                                : product.quantity < 5
+                                                    ? 'bg-orange-100 text-orange-800'
+                                                    : 'bg-green-100 text-green-800'
                                                 }`}>
                                                 {product.quantity === 0
                                                     ? 'Out of Stock'
@@ -308,22 +376,35 @@ const StockReport = ({ data }) => {
 };
 
 // Helper component to render different report types
-const ReportRenderer = ({ reportType, data }) => {
+const ReportRenderer = ({ reportType, data, dateRange }) => {
     console.log(`ReportRenderer: ${reportType}`, data);
 
+    // Add validation to ensure correct data is passed to each report
     switch (reportType) {
-        case 'stock':
-            return <StockReport data={data} />;
-        case 'sales':
-            return <SalesReport data={data} />;
-        case 'profit':
-            return <ProfitReport data={data} />;
         case 'category':
             return <CategoryReport data={data} />;
-        case 'revenue':
-            return <RevenueReport data={data} />;
         case 'customer':
             return <CustomerReport data={data} />;
+        case 'profit':
+            return <ProfitReport data={data} />;
+        case 'revenue':
+            return <RevenueReport data={data} />;
+        case 'sales':
+            // Sales report should only receive array data
+            if (Array.isArray(data)) {
+                return <SalesReport data={data} dateRange={dateRange} />;
+            } else {
+                return (
+                    <div className="text-center py-8 text-red-600">
+                        <h3 className="text-lg font-semibold mb-2">Data Routing Error</h3>
+                        <p>Sales Report received invalid data format. Expected array but got {typeof data}.</p>
+                        <p className="text-sm mt-2">Please check the report generation logic.</p>
+                    </div>
+                );
+            }
+        case 'stock':
+            // Stock report should receive object with summary, lowStock, allProducts
+            return <StockReport data={data} />;
         default:
             return <div>Select a report type</div>;
     }
@@ -340,8 +421,14 @@ const Reports = () => {
         end: new Date().toISOString().slice(0, 10)
     });
 
+    // Reports that require date range
+    const dateRangeReports = ['sales', 'revenue', 'profit', 'category', 'customer'];
+    const showDateRange = dateRangeReports.includes(selectedReport);
+
     // ===== Helper report generators =====
     const generateStockReport = (products) => {
+        console.log('Generating stock report with products:', products);
+
         if (!Array.isArray(products)) {
             console.error('generateStockReport: products is not an array', products);
             return {
@@ -354,7 +441,7 @@ const Reports = () => {
         const lowStock = products.filter(p => p.quantity < 5);
         const totalInventoryValue = products.reduce((acc, p) => acc + (parseFloat(p.price || 0) * (p.quantity || 0)), 0);
 
-        return {
+        const reportData = {
             summary: {
                 totalProducts: products.length,
                 totalInventoryValue,
@@ -364,18 +451,26 @@ const Reports = () => {
             lowStock,
             allProducts: products.sort((a, b) => (a.quantity || 0) - (b.quantity || 0))
         };
+
+        console.log('Generated stock report data:', reportData);
+        return reportData;
     };
 
     const generateDailySalesReport = (sales, startDate, endDate) => {
+        console.log('Generating sales report with:', { sales, startDate, endDate });
+
         if (!Array.isArray(sales)) {
             console.error('generateDailySalesReport: sales is not an array', sales);
             return [];
         }
 
-        return sales.filter(sale => {
+        const filteredSales = sales.filter(sale => {
             const saleDate = sale.date;
             return saleDate >= startDate && saleDate <= endDate;
         });
+
+        console.log('Filtered sales for date range:', startDate, 'to', endDate, ':', filteredSales);
+        return filteredSales;
     };
 
     const generateProfitReport = (products, sales) => {
@@ -401,6 +496,8 @@ const Reports = () => {
     const fetchData = async () => {
         try {
             const token = localStorage.getItem('token');
+            console.log('Fetching data with token:', token);
+
             const [salesRes, productsRes] = await Promise.all([
                 axios.get('http://127.0.0.1:8000/api/sales/sales/', {
                     headers: { 'Authorization': `Token ${token}` }
@@ -423,11 +520,13 @@ const Reports = () => {
     };
 
     const generateReport = () => {
-        let data = null;
-
-        console.log('Generating report:', selectedReport);
+        console.log('=== GENERATING REPORT ===');
+        console.log('Selected report:', selectedReport);
         console.log('Available sales:', sales);
         console.log('Available products:', products);
+        console.log('Date range:', dateRange);
+
+        let data = null;
 
         switch (selectedReport) {
             case 'stock':
@@ -478,26 +577,28 @@ const Reports = () => {
                         onChange={(e) => setSelectedReport(e.target.value)}
                         className="border border-gray-300 rounded-lg px-3 py-2"
                     >
-                        <option value="stock">Stock Level Report</option>
-                        <option value="sales">Daily Sales Report</option>
-                        <option value="profit">Profit Analysis</option>
                         <option value="category">Sales by Category</option>
-                        <option value="revenue">Revenue Report</option>
                         <option value="customer">Customer Report</option>
+                        <option value="profit">Profit Analysis</option>
+                        <option value="revenue">Revenue Report</option>
+                        <option value="sales">Daily Sales Report</option>
+                        <option value="stock">Stock Level Report</option>
                     </select>
 
                     <input
                         type="date"
                         value={dateRange.start}
                         onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                        className="border border-gray-300 rounded-lg px-3 py-2"
+                        className={`border border-gray-300 rounded-lg px-3 py-2 ${!showDateRange ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        disabled={!showDateRange}
                     />
 
                     <input
                         type="date"
                         value={dateRange.end}
                         onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                        className="border border-gray-300 rounded-lg px-3 py-2"
+                        className={`border border-gray-300 rounded-lg px-3 py-2 ${!showDateRange ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        disabled={!showDateRange}
                     />
 
                     <button
@@ -507,6 +608,30 @@ const Reports = () => {
                         Generate Report
                     </button>
                 </div>
+                {!showDateRange && (
+                    <p className="text-sm text-gray-500 mt-2">
+                        Date range is disabled for Stock Level Report
+                    </p>
+                )}
+            </div>
+
+            {/* Debug Info */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <h3 className="text-lg font-semibold text-yellow-800 mb-2">Debug Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <strong>Sales Data:</strong> {sales.length} records loaded
+                    </div>
+                    <div>
+                        <strong>Products Data:</strong> {products.length} records loaded
+                    </div>
+                    <div>
+                        <strong>Selected Report:</strong> {selectedReport}
+                    </div>
+                    <div>
+                        <strong>Report Data:</strong> {reportData ? 'Available' : 'Not generated'}
+                    </div>
+                </div>
             </div>
 
             {/* Report Display */}
@@ -515,7 +640,7 @@ const Reports = () => {
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-semibold">
                             {selectedReport.charAt(0).toUpperCase() + selectedReport.slice(1)} Report
-                            {selectedReport === 'sales' && (
+                            {showDateRange && (
                                 <span className="text-sm font-normal text-gray-600 ml-2">
                                     ({dateRange.start} to {dateRange.end})
                                 </span>
@@ -530,7 +655,21 @@ const Reports = () => {
                     </div>
 
                     {/* Render different report types */}
-                    <ReportRenderer reportType={selectedReport} data={reportData} />
+                    <ReportRenderer
+                        reportType={selectedReport}
+                        data={reportData}
+                        dateRange={dateRange}
+                    />
+                </div>
+            )}
+
+            {/* Instructions when no report is generated */}
+            {!reportData && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                    <h3 className="text-lg font-semibold text-blue-800 mb-2">No Report Generated</h3>
+                    <p className="text-blue-700">
+                        Select a report type and click "Generate Report" to view your business data.
+                    </p>
                 </div>
             )}
         </div>

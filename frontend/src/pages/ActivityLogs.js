@@ -16,6 +16,7 @@ const ActivityLogs = () => {
         search: ''
     });
     const [page, setPage] = useState(1);
+    const [hasNextPage, setHasNextPage] = useState(false);
     const perPage = 20;
 
     const actionOptions = [
@@ -43,22 +44,59 @@ const ActivityLogs = () => {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
+
+            if (!token) {
+                toast.error('Authentication token not found');
+                return;
+            }
+
             const params = new URLSearchParams();
 
+            // Add filters
             Object.entries(filters).forEach(([key, value]) => {
                 if (value) params.append(key, value);
             });
 
+            // Add pagination
             params.append('page', page);
+            params.append('page_size', perPage);
+
+            console.log('Fetching logs with params:', params.toString());
 
             const response = await axios.get(`http://127.0.0.1:8000/api/activity-logs/?${params}`, {
-                headers: { Authorization: `Token ${token}` }
+                headers: {
+                    'Authorization': `Token ${token}`,
+                    'Content-Type': 'application/json'
+                }
             });
 
-            setLogs(response.data.results || response.data);
+            console.log('Logs API response:', response.data);
+
+            // Handle different response formats
+            if (response.data.results) {
+                // Django REST framework pagination format
+                setLogs(response.data.results);
+                setHasNextPage(!!response.data.next);
+            } else if (Array.isArray(response.data)) {
+                // Simple array format
+                setLogs(response.data);
+                setHasNextPage(response.data.length === perPage);
+            } else {
+                // Fallback
+                setLogs([]);
+                setHasNextPage(false);
+            }
+
         } catch (err) {
             console.error('Error fetching activity logs:', err);
-            toast.error('Failed to load activity logs');
+            if (err.response?.status === 401) {
+                toast.error('Authentication failed. Please login again.');
+            } else if (err.response?.status === 404) {
+                toast.error('Activity logs endpoint not found');
+            } else {
+                toast.error('Failed to load activity logs');
+            }
+            setLogs([]);
         } finally {
             setLoading(false);
         }
@@ -67,35 +105,61 @@ const ActivityLogs = () => {
     const fetchStats = async () => {
         try {
             const token = localStorage.getItem('token');
+
+            if (!token) {
+                return;
+            }
+
             const response = await axios.get('http://127.0.0.1:8000/api/activity-logs/stats/', {
-                headers: { Authorization: `Token ${token}` }
+                headers: {
+                    'Authorization': `Token ${token}`,
+                    'Content-Type': 'application/json'
+                }
             });
+
+            console.log('Stats API response:', response.data);
             setStats(response.data);
+
         } catch (err) {
             console.error('Error fetching stats:', err);
+            // Don't show error for stats as it's secondary data
         }
     };
 
     const exportLogs = async () => {
         try {
             const token = localStorage.getItem('token');
+
+            if (!token) {
+                toast.error('Authentication token not found');
+                return;
+            }
+
             const response = await axios.get('http://127.0.0.1:8000/api/activity-logs/export/', {
-                headers: { Authorization: `Token ${token}` },
+                headers: {
+                    'Authorization': `Token ${token}`
+                },
                 responseType: 'blob'
             });
 
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', 'activity_logs.csv');
+            link.setAttribute('download', `activity_logs_${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(link);
             link.click();
             link.remove();
+            window.URL.revokeObjectURL(url);
 
             toast.success('Logs exported successfully');
+
         } catch (err) {
             console.error('Error exporting logs:', err);
-            toast.error('Failed to export logs');
+            if (err.response?.status === 404) {
+                toast.error('Export endpoint not available');
+            } else {
+                toast.error('Failed to export logs');
+            }
         }
     };
 
@@ -123,32 +187,28 @@ const ActivityLogs = () => {
 
     const getActionColor = (action) => {
         const colors = {
-            CREATE: 'bg-green-100 text-green-800',
-            UPDATE: 'bg-blue-100 text-blue-800',
-            DELETE: 'bg-red-100 text-red-800',
-            LOGIN: 'bg-purple-100 text-purple-800',
-            LOGOUT: 'bg-gray-100 text-gray-800',
-            VIEW: 'bg-yellow-100 text-yellow-800',
-            EXPORT: 'bg-indigo-100 text-indigo-800',
-            IMPORT: 'bg-pink-100 text-pink-800'
+            CREATE: 'bg-green-100 text-green-800 border border-green-200',
+            UPDATE: 'bg-blue-100 text-blue-800 border border-blue-200',
+            DELETE: 'bg-red-100 text-red-800 border border-red-200',
+            LOGIN: 'bg-purple-100 text-purple-800 border border-purple-200',
+            LOGOUT: 'bg-gray-100 text-gray-800 border border-gray-200',
+            VIEW: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
+            EXPORT: 'bg-indigo-100 text-indigo-800 border border-indigo-200',
+            IMPORT: 'bg-pink-100 text-pink-800 border border-pink-200'
         };
-        return colors[action] || 'bg-gray-100 text-gray-800';
+        return colors[action] || 'bg-gray-100 text-gray-800 border border-gray-200';
     };
 
-    const getModuleColor = (module) => {
-        const colors = {
-            PRODUCT: 'border-l-green-500',
-            SALE: 'border-l-blue-500',
-            CUSTOMER: 'border-l-purple-500',
-            USER: 'border-l-orange-500',
-            INVENTORY: 'border-l-red-500',
-            AUTH: 'border-l-indigo-500',
-            SYSTEM: 'border-l-gray-500'
-        };
-        return colors[module] || 'border-l-gray-500';
+    const formatDate = (timestamp) => {
+        try {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        } catch (error) {
+            return 'Invalid Date';
+        }
     };
 
-    if (loading && !logs.length) {
+    if (loading && logs.length === 0) {
         return (
             <div className="p-6">
                 <div className="flex justify-center items-center h-64">
@@ -175,7 +235,9 @@ const ActivityLogs = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-600">Total Activities (30d)</p>
-                                <p className="text-2xl font-bold text-gray-800">{stats.total_activities}</p>
+                                <p className="text-2xl font-bold text-gray-800">
+                                    {stats.total_activities || stats.total_activities_30d || 0}
+                                </p>
                             </div>
                             <div className="bg-blue-100 p-3 rounded-full">
                                 <span className="text-blue-600 text-xl">📊</span>
@@ -187,7 +249,9 @@ const ActivityLogs = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-600">Recent (7d)</p>
-                                <p className="text-2xl font-bold text-gray-800">{stats.recent_activities}</p>
+                                <p className="text-2xl font-bold text-gray-800">
+                                    {stats.recent_activities || stats.activities_7d || 0}
+                                </p>
                             </div>
                             <div className="bg-green-100 p-3 rounded-full">
                                 <span className="text-green-600 text-xl">🔄</span>
@@ -200,7 +264,7 @@ const ActivityLogs = () => {
                             <div>
                                 <p className="text-sm text-gray-600">Top Module</p>
                                 <p className="text-lg font-bold text-gray-800">
-                                    {stats.module_stats[0]?.module || 'N/A'}
+                                    {stats.module_stats?.[0]?.module || stats.top_module || 'N/A'}
                                 </p>
                             </div>
                             <div className="bg-purple-100 p-3 rounded-full">
@@ -214,7 +278,7 @@ const ActivityLogs = () => {
                             <div>
                                 <p className="text-sm text-gray-600">Top Action</p>
                                 <p className="text-lg font-bold text-gray-800">
-                                    {stats.action_stats[0]?.action || 'N/A'}
+                                    {stats.action_stats?.[0]?.action || stats.top_action || 'N/A'}
                                 </p>
                             </div>
                             <div className="bg-orange-100 p-3 rounded-full">
@@ -308,10 +372,26 @@ const ActivityLogs = () => {
                 </div>
             </div>
 
+            {/* Debug Info */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <h3 className="text-lg font-semibold text-yellow-800 mb-2">Debug Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                        <strong>Logs Count:</strong> {logs.length} records
+                    </div>
+                    <div>
+                        <strong>Current Page:</strong> {page}
+                    </div>
+                    <div>
+                        <strong>Loading:</strong> {loading ? 'Yes' : 'No'}
+                    </div>
+                </div>
+            </div>
+
             {/* Logs Table */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-full">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -339,44 +419,45 @@ const ActivityLogs = () => {
                                 <tr>
                                     <td colSpan="6" className="px-6 py-8 text-center">
                                         <div className="text-gray-500 text-lg mb-2">📝</div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-1">No Activity Logs</h3>
-                                        <p className="text-gray-500">No activity logs found matching your criteria.</p>
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                                            {loading ? 'Loading...' : 'No Activity Logs'}
+                                        </h3>
+                                        <p className="text-gray-500">
+                                            {loading ? 'Please wait while we load the logs...' : 'No activity logs found matching your criteria.'}
+                                        </p>
                                     </td>
                                 </tr>
                             ) : (
                                 logs.map((log) => (
                                     <tr key={log.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">
-                                                {new Date(log.timestamp).toLocaleDateString()}
-                                            </div>
-                                            <div className="text-sm text-gray-500">
-                                                {new Date(log.timestamp).toLocaleTimeString()}
+                                            <div className="text-sm text-gray-900 font-medium">
+                                                {formatDate(log.timestamp)}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="text-sm font-medium text-gray-900">
-                                                {log.user_name || 'System'}
+                                                {log.user_name || log.user_username || 'System'}
                                             </div>
                                             {log.user_email && (
                                                 <div className="text-sm text-gray-500">{log.user_email}</div>
                                             )}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getActionColor(log.action)}`}>
+                                            <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getActionColor(log.action)}`}>
                                                 {log.action}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-900">{log.module}</div>
+                                            <div className="text-sm text-gray-900 font-medium">{log.module}</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-900 max-w-md truncate">
+                                            <div className="text-sm text-gray-900 max-w-md">
                                                 {log.description}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-500">
+                                            <div className="text-sm text-gray-500 font-mono">
                                                 {log.ip_address || 'N/A'}
                                             </div>
                                         </td>
@@ -402,11 +483,12 @@ const ActivityLogs = () => {
                                 Previous
                             </button>
                             <span className="px-4 py-2 bg-blue-500 text-white rounded-lg">
-                                {page}
+                                Page {page}
                             </span>
                             <button
+                                disabled={!hasNextPage}
                                 onClick={() => setPage(page + 1)}
-                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Next
                             </button>

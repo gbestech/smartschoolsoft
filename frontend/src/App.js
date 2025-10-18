@@ -31,6 +31,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import DebtorList from './pages/DebtorList';
 import ActivityLogs from './pages/ActivityLogs';
+import CustomerReportForm from './pages/CustomerReport';
 
 function App() {
   return (
@@ -258,11 +259,20 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             } />
-            <Route path="/logs" element={
+            <Route path="/activitylogs" element={
               <ProtectedRoute adminOnly={true}>
                 <DashboardLayout>
                   <div className="p-6">
                    <ActivityLogs/>
+                  </div>
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/customerReport" element={
+              <ProtectedRoute adminOnly={true}>
+                <DashboardLayout>
+                  <div className="p-6">
+                   <CustomerReportForm/>
                   </div>
                 </DashboardLayout>
               </ProtectedRoute>

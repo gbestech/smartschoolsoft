@@ -7,4 +7,5 @@ urlpatterns = [
     path('api/', include('product.urls')),  # Replace 'yourapp' with your app name
     path('api-auth/', include('rest_framework.urls')),  
     path("api/sales/", include("sales.urls")),
+    path("reports/", include("customerreport.urls")),
 ]
