@@ -31,7 +31,8 @@ INSTALLED_APPS = [
     'auth_app',
     'product',
     'sales',
-    'customerreport'
+    'customerreport',
+    # 'django_extensions'
     
 ]
 

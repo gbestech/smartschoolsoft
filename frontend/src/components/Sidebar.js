@@ -25,9 +25,10 @@ const Sidebar = () => {
             ]
         },
         { path: '/orders', icon: '🛒', label: 'Orders', key: 'orders' },
-        // { path: '/customers', icon: '👥', label: 'Customers', key: 'customers' },
+        { path: '/customerReport', label: 'Customer Report', key: 'reprot' },
         { path: '/messages', icon: '💬', label: 'Messages', key: 'messages' },
         { path: '/settings', icon: '⚙️', label: 'Settings', key: 'settings' },
+        { path: '/viewCustomerReport', icon: '⚙️', label: 'View Customer Report', key: 'viewcustomerreport' },
     ];
 
     const adminMenuItems = [
@@ -55,6 +56,7 @@ const Sidebar = () => {
         { path: '/activitylogs', icon: '📋', label: 'Activity Logs', key: 'activitylogs' },
         { path: '/debtors', label: 'Debtors', key: 'debtor' },
         { path: '/customerReport', label: 'Customer Report', key: 'reprot' },
+        { path: '/viewCustomerReport', icon: '⚙️', label: 'View Customer Report', key: 'viewcustomerreport' },
     ];
 
     const commonMenuItems = [

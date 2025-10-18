@@ -32,6 +32,7 @@ import { ToastContainer } from 'react-toastify';
 import DebtorList from './pages/DebtorList';
 import ActivityLogs from './pages/ActivityLogs';
 import CustomerReportForm from './pages/CustomerReport';
+import ViewCustomerReport from './pages/ViewCustomerReport';
 
 function App() {
   return (
@@ -152,6 +153,20 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             } />
+            <Route path="/customerReport" element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CustomerReportForm />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/ViewCustomerReport" element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <ViewCustomerReport />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
             <Route path="/settings" element={
               <ProtectedRoute>
                 <DashboardLayout>
@@ -263,7 +278,7 @@ function App() {
               <ProtectedRoute adminOnly={true}>
                 <DashboardLayout>
                   <div className="p-6">
-                   <ActivityLogs/>
+                    <ActivityLogs />
                   </div>
                 </DashboardLayout>
               </ProtectedRoute>
@@ -272,7 +287,7 @@ function App() {
               <ProtectedRoute adminOnly={true}>
                 <DashboardLayout>
                   <div className="p-6">
-                   <CustomerReportForm/>
+                    <CustomerReportForm />
                   </div>
                 </DashboardLayout>
               </ProtectedRoute>
