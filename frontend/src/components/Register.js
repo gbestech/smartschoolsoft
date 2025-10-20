@@ -54,7 +54,7 @@ const Register = () => {
         const result = await register(formData);
 
         if (result.success) {
-            navigate('/dashboard');
+            navigate('/profile');
         } else {
             setError(result.error.username?.[0] || result.error.email?.[0] || 'Registration failed. Please try again.');
         }

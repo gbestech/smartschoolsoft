@@ -16,12 +16,12 @@ import ProductCategories from './components/admin/ProductCategories';
 // Other page components (Placeholders)
 import Customers from './components/Customers';
 import Messages from './components/Messages';
-import Settings from './components/Settings';
+
 import Help from './components/Help';
 import AllProducts from './AllProducts';
 import ProductInventory from './components/ProductInventory';
 import AddProduct from './components/AddProduct';
-import Profile from './components/Profile';
+// import Profile from './components/Profile';
 
 import Stocking from './components/Stocking';
 import EditProduct from './pages/EditProduct';
@@ -33,6 +33,8 @@ import DebtorList from './pages/DebtorList';
 import ActivityLogs from './pages/ActivityLogs';
 import CustomerReportForm from './pages/CustomerReport';
 import ViewCustomerReport from './pages/ViewCustomerReport';
+import Settings from './pages/Settings';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -71,13 +73,13 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             } />
-            <Route path="/profile" element={
+            {/* <Route path="/profile" element={
               <ProtectedRoute>
                 <DashboardLayout>
                   <Profile />
                 </DashboardLayout>
               </ProtectedRoute>
-            } />
+            } /> */}
 
             {/* User Product Routes */}
             <Route path="/products/all" element={
@@ -171,6 +173,13 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <Settings />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <ProfilePage />
                 </DashboardLayout>
               </ProtectedRoute>
             } />
