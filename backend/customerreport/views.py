@@ -42,3 +42,66 @@ def create_report(request):
 def product_list(request):
     products = Product.objects.all().values("id", "name", "price", "description")
     return JsonResponse(list(products), safe=False)
+
+
+# views.py
+@api_view(['GET'])
+def report_list(request):
+    try:
+        reports = CustomerReport.objects.all().order_by('-created_at')
+        serializer = CustomerReportSerializer(reports, many=True)
+        
+        return Response({
+            'count': reports.count(),
+            'reports': serializer.data
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+    
+# views.py
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.db.models import Count
+from .models import CustomerReport
+from django.utils import timezone
+from datetime import timedelta
+
+@api_view(['GET'])
+def report_count(request):
+    """
+    Get total counts for reports and customers
+    """
+    try:
+        # Total reports count
+        total_reports = CustomerReport.objects.count()
+        
+        # Unique customers count
+        unique_customers = CustomerReport.objects.values('customer_name').distinct().count()
+        
+        # Optional: Recent reports (last 30 days)
+        recent_reports = CustomerReport.objects.filter(
+            created_at__gte=timezone.now() - timedelta(days=30)
+        ).count()
+        
+        # Optional: Reports per customer statistics
+        customer_stats = CustomerReport.objects.values('customer_name').annotate(
+            report_count=Count('id')
+        ).order_by('-report_count')[:5]  # Top 5 customers
+        
+        return Response({
+            'total_reports': total_reports,
+            'unique_customers': unique_customers,
+            'recent_reports': recent_reports,
+            'top_customers': [
+                {
+                    'name': stat['customer_name'],
+                    'report_count': stat['report_count']
+                }
+                for stat in customer_stats
+            ]
+        })
+        
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=500)
