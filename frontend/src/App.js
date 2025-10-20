@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './components/Login';
@@ -345,25 +346,71 @@ const PublicLayout = ({ children }) => {
   );
 };
 
-// In your DashboardLayout component
-// In your DashboardLayout component
+
+// In your App.js - Update the DashboardLayout component
+// const DashboardLayout = ({ children }) => {
+//   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+//   return (
+//     <div className="min-h-screen flex flex-col">
+//       {/* Navbar with higher z-index */}
+//       <div className="z-50 relative">
+//         {/* <Navbar /> */}
+//       </div>
+
+//       <div className="flex flex-1 relative">
+//         {/* Sidebar with lower z-index than navbar but higher than content */}
+//         <div className="z-40">
+//           <Sidebar onToggle={setIsSidebarCollapsed} />
+//         </div>
+
+//         {/* Main Content Area */}
+//         <div className={`flex-1 transition-all duration-300 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'
+//           }`}>
+//           <main className="h-full p-6">
+//             {children}
+//           </main>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+
+// In your App.js - Update the DashboardLayout component
+
+
+// In your App.js - Update the DashboardLayout component
+
 const DashboardLayout = ({ children }) => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gray-50">
+      {/* Navbar - Fixed at top */}
       <Navbar />
-      <div className="flex flex-1">
-        <Sidebar />
-        <div className="flex-1 ml-64"> {/* Remove overflow-hidden from here too */}
-          <main className="h-full overflow-y-auto"> {/* Let main content scroll */}
-            {children}
-          </main>
+
+      {/* Sidebar - Controlled by parent state */}
+      <div className={`fixed top-16 left-0 bottom-0 z-40 transition-all duration-300 ${isSidebarCollapsed ? 'w-20' : 'w-64'
+        }`}>
+        <Sidebar
+          isCollapsed={isSidebarCollapsed}
+          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+      </div>
+
+      {/* Main Content - Adjusted for navbar height and sidebar width */}
+      <div
+        className={`min-h-screen transition-all duration-300 pt-16 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'
+          }`}
+      >
+        <div className="p-6">
+          {children}
         </div>
       </div>
-      {/* <SimpleFooter /> */}
     </div>
   );
 };
-
 // Protected route component
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, isAuthenticated } = useAuth();

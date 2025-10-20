@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const Sidebar = () => {
+const Sidebar = ({ isCollapsed, onToggle }) => {
     const { user, logout } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
-    const [isCollapsed, setIsCollapsed] = useState(false);
     const [openDropdown, setOpenDropdown] = useState(null);
 
     const userMenuItems = [
@@ -18,7 +17,6 @@ const Sidebar = () => {
             label: 'Products',
             key: 'products',
             submenu: [
-
                 // { path: '/products/categories', label: 'Categories', key: 'categories' },
                 // { path: '/products/inventory', label: 'Inventory', key: 'inventory' },
                 // { path: '/products/add', label: 'Add New', key: 'add-product' },
@@ -46,10 +44,7 @@ const Sidebar = () => {
                 { path: '/admin/products/analytics', label: 'Analytics', key: 'analytics' },
                 { path: '/admin/products/add', label: 'Add New', key: 'add-product' },
                 { path: '/orders', label: 'Order', key: 'order' },
-                
-
             ]
-
         },
         { path: '/reports', icon: '📈', label: 'Reports', key: 'reports' },
         { path: '/admin/settings', icon: '⚙️', label: 'System Settings', key: 'settings' },
@@ -97,14 +92,20 @@ const Sidebar = () => {
         setOpenDropdown(null);
     };
 
+    // Close dropdowns when sidebar collapses
+    useEffect(() => {
+        if (isCollapsed) {
+            setOpenDropdown(null);
+        }
+    }, [isCollapsed]);
+
     return (
-        <div className={`bg-white shadow-lg border-r border-gray-200 flex flex-col transition-all duration-300 fixed left-0 top-0 h-screen ${isCollapsed ? 'w-20' : 'w-64'
-            }`}>
+        <div className="bg-white shadow-lg border-r border-gray-200 flex flex-col h-full">
             {/* Sidebar Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
                 <button
                     className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    onClick={onToggle}
                 >
                     {isCollapsed ? '→' : '←'}
                 </button>
@@ -125,8 +126,8 @@ const Sidebar = () => {
                                 // Dropdown items
                                 <div
                                     className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${hasActiveSubmenu(item.submenu)
-                                        ? 'bg-blue-50 text-blue-600 border border-blue-200'
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                            ? 'bg-blue-50 text-blue-600 border border-blue-200'
+                                            : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                     onClick={(e) => handleDropdownClick(item, e)}
                                 >
@@ -145,8 +146,8 @@ const Sidebar = () => {
                                 <Link
                                     to={item.path}
                                     className={`flex items-center p-3 rounded-lg transition-colors ${isActive(item.path)
-                                        ? 'bg-blue-500 text-white shadow-sm'
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                            ? 'bg-blue-500 text-white shadow-sm'
+                                            : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                 >
                                     <span className="text-lg mr-3">{item.icon}</span>
@@ -164,8 +165,8 @@ const Sidebar = () => {
                                             key={subItem.key}
                                             to={subItem.path}
                                             className={`block py-2 px-3 rounded-lg text-sm transition-colors ${isActive(subItem.path)
-                                                ? 'bg-blue-100 text-blue-700 font-medium'
-                                                : 'text-gray-600 hover:bg-gray-100'
+                                                    ? 'bg-blue-100 text-blue-700 font-medium'
+                                                    : 'text-gray-600 hover:bg-gray-100'
                                                 }`}
                                             onClick={(e) => handleSubmenuClick(subItem.path, e)}
                                         >
@@ -185,8 +186,8 @@ const Sidebar = () => {
                             key={item.key}
                             to={item.path}
                             className={`flex items-center p-3 rounded-lg transition-colors ${isActive(item.path)
-                                ? 'bg-blue-500 text-white shadow-sm'
-                                : 'text-gray-700 hover:bg-gray-100'
+                                    ? 'bg-blue-500 text-white shadow-sm'
+                                    : 'text-gray-700 hover:bg-gray-100'
                                 }`}
                         >
                             <span className="text-lg mr-3">{item.icon}</span>
@@ -242,5 +243,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-
-
