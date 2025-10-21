@@ -130,6 +130,107 @@ const AddProduct = () => {
     }
   };
 
+  // ✅ NEW: Delete product function
+  const handleDelete = async () => {
+    if (!formData.name.trim()) {
+      toast.error("❌ Please enter a product name to delete");
+      return;
+    }
+
+    if (!window.confirm(`Are you sure you want to delete the product "${formData.name}"?`)) {
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const token = localStorage.getItem("token");
+      const productName = formData.name.trim();
+
+      // First, try to find the product by name
+      const searchResponse = await axios.get(
+        `http://127.0.0.1:8000/api/products/?search=${encodeURIComponent(productName)}`,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        }
+      );
+
+      if (searchResponse.data.results && searchResponse.data.results.length > 0) {
+        const product = searchResponse.data.results.find(
+          p => p.name.toLowerCase() === productName.toLowerCase()
+        );
+
+        if (product) {
+          // Delete the product by ID
+          await axios.delete(
+            `http://127.0.0.1:8000/api/products/${product.id}/`,
+            {
+              headers: {
+                Authorization: `Token ${token}`,
+              },
+            }
+          );
+
+          setSuccess(`✅ Product "${formData.name}" has been deleted successfully!`);
+          toast.success(`✅ Product "${formData.name}" has been deleted successfully!`);
+
+          // Clear the form
+          setFormData({
+            name: "",
+            description: "",
+            price: "",
+            selling_price: "",
+            quantity: "",
+            category: "ELECTRONICS",
+          });
+
+          setTimeout(() => {
+            setIsModalOpen(false);
+            navigate("/products/all");
+          }, 1000);
+        } else {
+          throw new Error("Product not found");
+        }
+      } else {
+        throw new Error("Product not found");
+      }
+    } catch (err) {
+      console.error("Error deleting product:", err);
+
+      let errorMessage = "";
+
+      if (err.response) {
+        if (err.response.status === 404) {
+          errorMessage = `❌ Product "${formData.name}" not found`;
+          toast.error(errorMessage);
+        } else if (err.response.status === 401) {
+          errorMessage = "❌ Authentication required. Please log in.";
+          toast.error(errorMessage);
+        } else if (err.response.status === 403) {
+          errorMessage = "❌ You don't have permission to delete products.";
+          toast.error(errorMessage);
+        } else {
+          errorMessage = `❌ Error deleting product: ${err.response.status}`;
+          toast.error(errorMessage);
+        }
+      } else if (err.message === "Product not found") {
+        errorMessage = `❌ Product "${formData.name}" not found`;
+        toast.error(errorMessage);
+      } else {
+        errorMessage = "❌ Cannot connect to server. Please try again.";
+        toast.error(errorMessage);
+      }
+
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCancel = () => {
     setFormData({
       name: "",
@@ -171,7 +272,7 @@ const AddProduct = () => {
               <span className="text-red-500 mr-2 mt-0.5">⚠️</span>
               <div>
                 <span className="text-red-700 text-sm font-medium block mb-1">
-                  Validation Error
+                  {error.includes("Validation") ? "Validation Error" : "Error"}
                 </span>
                 <pre className="text-red-600 text-xs whitespace-pre-wrap">
                   {error}
@@ -332,6 +433,16 @@ const AddProduct = () => {
               ) : (
                 "Add Product"
               )}
+            </button>
+
+            {/* ✅ NEW: Delete Button */}
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={loading || !formData.name.trim()}
+              className="flex-1 bg-red-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center"
+            >
+              🗑️ Delete Product
             </button>
 
             <button

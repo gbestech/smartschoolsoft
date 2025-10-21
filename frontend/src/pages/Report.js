@@ -1,679 +1,465 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+// import React, { useState, useEffect } from "react";
+// import { toast } from "react-toastify";
+// import axios from "axios";
+// const API_BASE = "http://localhost:8000";
 
-// ===== Individual Report Components =====
-const CategoryReport = ({ data }) => (
-    <div>
-        <h3 className="text-lg font-semibold mb-4">Category Report</h3>
-        <div className="text-center py-8 text-gray-500">
-            {data?.message || "Category report not implemented yet"}
-        </div>
-    </div>
-);
+// const CustomerReportForm = ({ onSuccess }) => {
+//     const [formData, setFormData] = useState({
+//         customer_name: "",
+//         report_date: "",
+//         message: "",
+//         products: [],
+//     });
+//     const [isSubmitting, setIsSubmitting] = useState(false);
+//     const [products, setProducts] = useState([]);
+//     const [accordionOpen, setAccordionOpen] = useState(false);
+//     const [loadingProducts, setLoadingProducts] = useState(true);
+//     const [error, setError] = useState(null);
 
-const CustomerReport = ({ data }) => (
-    <div>
-        <h3 className="text-lg font-semibold mb-4">Customer Report</h3>
-        <div className="text-center py-8 text-gray-500">
-            {data?.message || "Customer report not implemented yet"}
-        </div>
-    </div>
-);
+//     // ✅ Fetch products from the backend
+//     useEffect(() => {
+//         const loadProducts = async () => {
+//             try {
+//                 setLoadingProducts(true);
+//                 const response = await fetch(`${API_BASE}/reports/products/`);
+//                 if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+//                 const data = await response.json();
+//                 setProducts(data);
+//             } catch (err) {
+//                 console.error("Error fetching products:", err);
+//                 setError("⚠️ Failed to load products");
+//                 toast.error("⚠️ Failed to load products");
+//             } finally {
+//                 setLoadingProducts(false);
+//             }
+//         };
+//         loadProducts();
+//     }, []);
 
-const ProfitReport = ({ data }) => (
-    <div>
-        <h3 className="text-lg font-semibold mb-4">Profit Report</h3>
-        <div className="text-center py-8 text-gray-500">
-            {data?.message || "Profit report not implemented yet"}
-        </div>
-    </div>
-);
+//     // ✅ Handle form field changes
+//     const handleChange = (e) => {
+//         const { name, value } = e.target;
+//         setFormData((prev) => ({
+//             ...prev,
+//             [name]: value,
+//         }));
+//     };
 
-const RevenueReport = ({ data }) => (
-    <div>
-        <h3 className="text-lg font-semibold mb-4">Revenue Report</h3>
-        <div className="text-center py-8 text-gray-500">
-            {data?.message || "Revenue report not implemented yet"}
-        </div>
-    </div>
-);
+//     // ✅ Toggle product checkbox
+//     const handleProductToggle = (productId) => {
+//         setFormData((prev) => {
+//             const alreadySelected = prev.products.includes(productId);
+//             return {
+//                 ...prev,
+//                 products: alreadySelected
+//                     ? prev.products.filter((id) => id !== productId)
+//                     : [...prev.products, productId],
+//             };
+//         });
+//     };
 
-const SalesReport = ({ data, dateRange }) => {
-    console.log('SalesReport data:', data);
-    console.log('SalesReport dateRange:', dateRange);
+//     // ✅ Submit form data with JWT Authorization header
+//     const handleSubmit = async (e) => {
+//         e.preventDefault();
 
-    if (!data) {
-        return (
-            <div className="text-center py-8 text-gray-500">
-                No sales data available
-            </div>
-        );
-    }
+//         try {
+//             const response = await axios.post("http://localhost:8000/reports/api/reports/", formData);
+//             toast.success("Report submitted successfully!");
+//             console.log(response.data);
+//         } catch (error) {
+//             console.error("Error submitting report:", error);
+//             toast.error("Failed to submit report");
+//         }
+//     };
 
-    if (!Array.isArray(data)) {
-        return (
-            <div className="text-center py-8 text-yellow-600">
-                Invalid data format for Sales Report. Expected array but got: {typeof data}
-                <div className="text-xs mt-2 text-left bg-gray-100 p-2 rounded">
-                    This might be happening because the wrong data is being passed to the Sales Report.
-                    Please check the report generation logic.
-                </div>
-            </div>
-        );
-    }
 
-    if (data.length === 0) {
-        return (
-            <div className="text-center py-8 text-gray-500">
-                No sales data found for {dateRange.start} to {dateRange.end}
-            </div>
-        );
-    }
+//     const today = new Date().toISOString().split("T")[0];
 
-    // Calculate totals
-    const totalSales = data.reduce((sum, sale) => sum + parseFloat(sale.total || 0), 0);
-    const totalAmountPaid = data.reduce((sum, sale) => sum + parseFloat(sale.amount_paid || 0), 0);
-    const totalBalance = data.reduce((sum, sale) => sum + parseFloat(sale.balance || 0), 0);
-    const totalItems = data.reduce((sum, sale) => {
-        const items = sale.items || [];
-        return sum + items.reduce((itemSum, item) => itemSum + (item.qty || 0), 0);
-    }, 0);
+//     return (
+//         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
+//             <div className="max-w-md mx-auto">
+//                 <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+//                     {/* Header */}
+//                     <div className="text-center mb-8">
+//                         <div className="mx-auto h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+//                             <span className="text-2xl">📊</span>
+//                         </div>
+//                         <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Customer Report</h2>
+//                         <p className="text-gray-600 text-sm">
+//                             Fill in customer details and report information
+//                         </p>
+//                     </div>
 
-    // Calculate daily breakdown
-    const dailyBreakdown = {};
-    data.forEach(sale => {
-        const date = sale.date;
-        if (!dailyBreakdown[date]) {
-            dailyBreakdown[date] = {
-                date,
-                transactions: 0,
-                totalSales: 0,
-                totalItems: 0
-            };
-        }
-        dailyBreakdown[date].transactions += 1;
-        dailyBreakdown[date].totalSales += parseFloat(sale.total || 0);
-        dailyBreakdown[date].totalItems += (sale.items || []).reduce((sum, item) => sum + (item.qty || 0), 0);
+//                     {/* Form */}
+//                     <form onSubmit={handleSubmit} className="space-y-6">
+//                         {/* Customer Name */}
+//                         <div>
+//                             <label htmlFor="customer_name" className="block text-sm font-medium text-gray-700 mb-2">
+//                                 👤 Customer Name
+//                             </label>
+//                             <input
+//                                 type="text"
+//                                 id="customer_name"
+//                                 name="customer_name"
+//                                 value={formData.customer_name}
+//                                 onChange={handleChange}
+//                                 required
+//                                 placeholder="Enter customer full name"
+//                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+//                             />
+//                         </div>
+
+//                         {/* Report Date */}
+//                         <div>
+//                             <label htmlFor="report_date" className="block text-sm font-medium text-gray-700 mb-2">
+//                                 📅 Report Date
+//                             </label>
+//                             <input
+//                                 type="date"
+//                                 id="report_date"
+//                                 name="report_date"
+//                                 value={formData.report_date}
+//                                 onChange={handleChange}
+//                                 max={today}
+//                                 required
+//                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+//                             />
+//                         </div>
+
+//                         {/* Accordion for Products */}
+//                         <div className="border rounded-lg shadow-sm overflow-hidden">
+//                             <button
+//                                 type="button"
+//                                 onClick={() => setAccordionOpen(!accordionOpen)}
+//                                 className="w-full flex justify-between items-center px-4 py-3 bg-gray-100 hover:bg-gray-200 transition"
+//                             >
+//                                 <span className="font-medium text-gray-700">🛒 Select Products</span>
+//                                 <span>{accordionOpen ? "▲" : "▼"}</span>
+//                             </button>
+
+//                             {accordionOpen && (
+//                                 <div className="max-h-60 overflow-y-auto bg-white border-t">
+//                                     {loadingProducts ? (
+//                                         <p className="text-center py-3 text-gray-500 text-sm">Loading products...</p>
+//                                     ) : error ? (
+//                                         <p className="text-center py-3 text-red-500 text-sm">{error}</p>
+//                                     ) : products.length > 0 ? (
+//                                         products.map((product) => (
+//                                             <label
+//                                                 key={product.id}
+//                                                 className="flex items-center justify-between px-4 py-2 hover:bg-gray-50 cursor-pointer"
+//                                             >
+//                                                 <span className="text-gray-700 text-sm">{product.name}</span>
+//                                                 <input
+//                                                     type="checkbox"
+//                                                     checked={formData.products.includes(product.id)}
+//                                                     onChange={() => handleProductToggle(product.id)}
+//                                                     className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+//                                                 />
+//                                             </label>
+//                                         ))
+//                                     ) : (
+//                                         <p className="text-gray-500 text-sm px-4 py-3">No products available.</p>
+//                                     )}
+//                                 </div>
+//                             )}
+//                         </div>
+
+//                         {/* Message */}
+//                         <div>
+//                             <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+//                                 💬 Report Message
+//                             </label>
+//                             <textarea
+//                                 id="message"
+//                                 name="message"
+//                                 value={formData.message}
+//                                 onChange={handleChange}
+//                                 required
+//                                 rows="4"
+//                                 placeholder="Describe the issue, feedback, or report details..."
+//                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+//                             />
+//                             <div className="flex justify-between text-xs mt-2 text-gray-500">
+//                                 <span>{formData.message.length} characters</span>
+//                                 {formData.message.length > 500 && (
+//                                     <span className="text-red-500">Maximum 500 characters recommended</span>
+//                                 )}
+//                             </div>
+//                         </div>
+
+//                         {/* Submit Button */}
+//                         <button
+//                             type="submit"
+//                             disabled={isSubmitting}
+//                             className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-200 ${isSubmitting
+//                                 ? "bg-gray-400 cursor-not-allowed"
+//                                 : "bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+//                                 }`}
+//                         >
+//                             {isSubmitting ? (
+//                                 <div className="flex items-center justify-center space-x-2">
+//                                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+//                                     <span>Submitting...</span>
+//                                 </div>
+//                             ) : (
+//                                 <div className="flex items-center justify-center space-x-2">
+//                                     <span>📤</span>
+//                                     <span>Submit Report</span>
+//                                 </div>
+//                             )}
+//                         </button>
+//                     </form>
+
+//                     <div className="mt-6 text-center">
+//                         <p className="text-xs text-gray-500">
+//                             Customer report will be securely stored and accessible to authorized team members.
+//                         </p>
+//                     </div>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
+
+// export default CustomerReportForm;
+
+import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { useNavigate } from "react-router-dom"; // ✅ import navigation hook
+
+const API_BASE = "http://localhost:8000";
+
+const CustomerReportForm = ({ onSuccess }) => {
+    const navigate = useNavigate(); // ✅ initialize navigate
+
+    const [formData, setFormData] = useState({
+        customer_name: "",
+        report_date: "",
+        message: "",
+        products: [],
     });
 
-    const dailyBreakdownArray = Object.values(dailyBreakdown).sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    return (
-        <div>
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{data.length}</div>
-                    <div className="text-sm text-blue-800">Total Transactions</div>
-                </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">₦{totalSales.toLocaleString()}</div>
-                    <div className="text-sm text-green-800">Total Sales</div>
-                </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">₦{totalAmountPaid.toLocaleString()}</div>
-                    <div className="text-sm text-purple-800">Amount Paid</div>
-                </div>
-                <div className="bg-orange-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">{totalItems}</div>
-                    <div className="text-sm text-orange-800">Items Sold</div>
-                </div>
-            </div>
-
-            {/* Daily Breakdown */}
-            {dailyBreakdownArray.length > 1 && (
-                <div className="mb-6">
-                    <h4 className="text-lg font-semibold mb-3">Daily Breakdown</h4>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-4 py-2 text-left">Date</th>
-                                    <th className="px-4 py-2 text-left">Transactions</th>
-                                    <th className="px-4 py-2 text-left">Total Sales</th>
-                                    <th className="px-4 py-2 text-left">Items Sold</th>
-                                    <th className="px-4 py-2 text-left">Average per Transaction</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {dailyBreakdownArray.map(day => (
-                                    <tr key={day.date} className="border-b hover:bg-gray-50">
-                                        <td className="px-4 py-2 font-medium">{day.date}</td>
-                                        <td className="px-4 py-2">{day.transactions}</td>
-                                        <td className="px-4 py-2">₦{day.totalSales.toLocaleString()}</td>
-                                        <td className="px-4 py-2">{day.totalItems}</td>
-                                        <td className="px-4 py-2">
-                                            ₦{(day.totalSales / day.transactions).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-
-            {/* Detailed Transactions */}
-            <div>
-                <h4 className="text-lg font-semibold mb-3">Detailed Transactions</h4>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-4 py-2 text-left">Date</th>
-                                <th className="px-4 py-2 text-left">Customer</th>
-                                <th className="px-4 py-2 text-left">Phone</th>
-                                <th className="px-4 py-2 text-left">Items</th>
-                                <th className="px-4 py-2 text-left">Total</th>
-                                <th className="px-4 py-2 text-left">Paid</th>
-                                <th className="px-4 py-2 text-left">Balance</th>
-                                <th className="px-4 py-2 text-left">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.map(sale => (
-                                <tr key={sale.id} className="border-b hover:bg-gray-50">
-                                    <td className="px-4 py-2">{sale.date}</td>
-                                    <td className="px-4 py-2">
-                                        <div className="font-medium">{sale.customer_name || 'N/A'}</div>
-                                        <div className="text-xs text-gray-500">{sale.gender || 'N/A'}</div>
-                                    </td>
-                                    <td className="px-4 py-2">{sale.phone || 'N/A'}</td>
-                                    <td className="px-4 py-2">
-                                        {(sale.items || []).map((item, index) => (
-                                            <div key={index} className="text-xs">
-                                                Item #{item.product} (Qty: {item.qty})
-                                            </div>
-                                        ))}
-                                    </td>
-                                    <td className="px-4 py-2 font-semibold">₦{parseFloat(sale.total || 0).toLocaleString()}</td>
-                                    <td className="px-4 py-2 text-green-600">₦{parseFloat(sale.amount_paid || 0).toLocaleString()}</td>
-                                    <td className="px-4 py-2">
-                                        <span className={parseFloat(sale.balance || 0) > 0 ? "text-red-600 font-semibold" : "text-green-600"}>
-                                            ₦{parseFloat(sale.balance || 0).toLocaleString()}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-2">
-                                        <span className={`px-2 py-1 rounded-full text-xs ${parseFloat(sale.balance || 0) === 0
-                                            ? "bg-green-100 text-green-800"
-                                            : "bg-yellow-100 text-yellow-800"
-                                            }`}>
-                                            {parseFloat(sale.balance || 0) === 0 ? 'Paid' : 'Pending'}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                        <tfoot className="bg-gray-100 font-semibold">
-                            <tr>
-                                <td colSpan="4" className="px-4 py-2 text-right">Totals:</td>
-                                <td className="px-4 py-2">₦{totalSales.toLocaleString()}</td>
-                                <td className="px-4 py-2">₦{totalAmountPaid.toLocaleString()}</td>
-                                <td className="px-4 py-2">₦{totalBalance.toLocaleString()}</td>
-                                <td className="px-4 py-2"></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const StockReport = ({ data }) => {
-    console.log('StockReport data:', data);
-
-    if (!data) {
-        return (
-            <div className="text-center py-8 text-gray-500">
-                No stock data available
-            </div>
-        );
-    }
-
-    // Check if this is actually stock data structure
-    if (!data.summary || !data.lowStock || !data.allProducts) {
-        return (
-            <div className="text-center py-8 text-yellow-600">
-                Invalid data format for Stock Report
-                <div className="text-xs mt-2 text-left bg-gray-100 p-2 rounded">
-                    Expected stock data structure but got different data.
-                    <pre>{JSON.stringify(data, null, 2)}</pre>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div>
-            <h3 className="text-lg font-semibold mb-4">Stock Level Summary</h3>
-
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{data.summary.totalProducts || 0}</div>
-                    <div className="text-sm text-blue-800">Total Products</div>
-                </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">₦{(data.summary.totalInventoryValue || 0).toLocaleString()}</div>
-                    <div className="text-sm text-green-800">Inventory Value</div>
-                </div>
-                <div className="bg-red-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-red-600">{data.summary.outOfStock || 0}</div>
-                    <div className="text-sm text-red-800">Out of Stock</div>
-                </div>
-                <div className="bg-orange-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">{data.summary.lowStock || 0}</div>
-                    <div className="text-sm text-orange-800">Low Stock</div>
-                </div>
-            </div>
-
-            {/* Low stock products table */}
-            {data.lowStock && data.lowStock.length > 0 ? (
-                <div className="mt-6">
-                    <h4 className="font-semibold mb-3 text-red-600">Low Stock Alert - Products ({data.lowStock.length})</h4>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-4 py-2 text-left">Product</th>
-                                    <th className="px-4 py-2 text-left">Category</th>
-                                    <th className="px-4 py-2 text-left">Current Stock</th>
-                                    <th className="px-4 py-2 text-left">Price</th>
-                                    <th className="px-4 py-2 text-left">Stock Value</th>
-                                    <th className="px-4 py-2 text-left">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.lowStock.map(product => (
-                                    <tr key={product.id} className="border-b hover:bg-red-50">
-                                        <td className="px-4 py-2 font-medium">{product.name}</td>
-                                        <td className="px-4 py-2">{product.category}</td>
-                                        <td className="px-4 py-2">
-                                            <span className={`font-semibold ${product.quantity === 0 ? 'text-red-600' : 'text-orange-600'
-                                                }`}>
-                                                {product.quantity}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-2">₦{parseFloat(product.price || 0).toLocaleString()}</td>
-                                        <td className="px-4 py-2">₦{(parseFloat(product.price || 0) * product.quantity).toLocaleString()}</td>
-                                        <td className="px-4 py-2">
-                                            <span className={`px-2 py-1 rounded-full text-xs ${product.quantity === 0
-                                                ? 'bg-red-100 text-red-800'
-                                                : 'bg-orange-100 text-orange-800'
-                                                }`}>
-                                                {product.quantity === 0 ? 'Out of Stock' : 'Low Stock'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            ) : (
-                <div className="text-center py-4 text-green-600">
-                    No low stock products found
-                </div>
-            )}
-
-            {/* All products inventory */}
-            {data.allProducts && data.allProducts.length > 0 && (
-                <div className="mt-8">
-                    <h4 className="font-semibold mb-3">Complete Inventory ({data.allProducts.length} products)</h4>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-4 py-2 text-left">Product</th>
-                                    <th className="px-4 py-2 text-left">Category</th>
-                                    <th className="px-4 py-2 text-left">Stock</th>
-                                    <th className="px-4 py-2 text-left">Price</th>
-                                    <th className="px-4 py-2 text-left">Stock Value</th>
-                                    <th className="px-4 py-2 text-left">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.allProducts.map(product => (
-                                    <tr key={product.id} className="border-b hover:bg-gray-50">
-                                        <td className="px-4 py-2 font-medium">{product.name}</td>
-                                        <td className="px-4 py-2">{product.category}</td>
-                                        <td className="px-4 py-2">
-                                            <span className={`font-semibold ${product.quantity === 0
-                                                ? 'text-red-600'
-                                                : product.quantity < 5
-                                                    ? 'text-orange-600'
-                                                    : 'text-green-600'
-                                                }`}>
-                                                {product.quantity}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-2">₦{parseFloat(product.price || 0).toLocaleString()}</td>
-                                        <td className="px-4 py-2">₦{(parseFloat(product.price || 0) * product.quantity).toLocaleString()}</td>
-                                        <td className="px-4 py-2">
-                                            <span className={`px-2 py-1 rounded-full text-xs ${product.quantity === 0
-                                                ? 'bg-red-100 text-red-800'
-                                                : product.quantity < 5
-                                                    ? 'bg-orange-100 text-orange-800'
-                                                    : 'bg-green-100 text-green-800'
-                                                }`}>
-                                                {product.quantity === 0
-                                                    ? 'Out of Stock'
-                                                    : product.quantity < 5
-                                                        ? 'Low Stock'
-                                                        : 'In Stock'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
-
-// Helper component to render different report types
-const ReportRenderer = ({ reportType, data, dateRange }) => {
-    console.log(`ReportRenderer: ${reportType}`, data);
-
-    // Add validation to ensure correct data is passed to each report
-    switch (reportType) {
-        case 'category':
-            return <CategoryReport data={data} />;
-        case 'customer':
-            return <CustomerReport data={data} />;
-        case 'profit':
-            return <ProfitReport data={data} />;
-        case 'revenue':
-            return <RevenueReport data={data} />;
-        case 'sales':
-            // Sales report should only receive array data
-            if (Array.isArray(data)) {
-                return <SalesReport data={data} dateRange={dateRange} />;
-            } else {
-                return (
-                    <div className="text-center py-8 text-red-600">
-                        <h3 className="text-lg font-semibold mb-2">Data Routing Error</h3>
-                        <p>Sales Report received invalid data format. Expected array but got {typeof data}.</p>
-                        <p className="text-sm mt-2">Please check the report generation logic.</p>
-                    </div>
-                );
-            }
-        case 'stock':
-            // Stock report should receive object with summary, lowStock, allProducts
-            return <StockReport data={data} />;
-        default:
-            return <div>Select a report type</div>;
-    }
-};
-
-const Reports = () => {
-    const [sales, setSales] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedReport, setSelectedReport] = useState('stock');
-    const [reportData, setReportData] = useState(null);
-    const [dateRange, setDateRange] = useState({
-        start: new Date().toISOString().slice(0, 10),
-        end: new Date().toISOString().slice(0, 10)
-    });
+    const [accordionOpen, setAccordionOpen] = useState(false);
+    const [loadingProducts, setLoadingProducts] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Reports that require date range
-    const dateRangeReports = ['sales', 'revenue', 'profit', 'category', 'customer'];
-    const showDateRange = dateRangeReports.includes(selectedReport);
-
-    // ===== Helper report generators =====
-    const generateStockReport = (products) => {
-        console.log('Generating stock report with products:', products);
-
-        if (!Array.isArray(products)) {
-            console.error('generateStockReport: products is not an array', products);
-            return {
-                summary: { totalProducts: 0, totalInventoryValue: 0, outOfStock: 0, lowStock: 0 },
-                lowStock: [],
-                allProducts: []
-            };
-        }
-
-        const lowStock = products.filter(p => p.quantity < 5);
-        const totalInventoryValue = products.reduce((acc, p) => acc + (parseFloat(p.price || 0) * (p.quantity || 0)), 0);
-
-        const reportData = {
-            summary: {
-                totalProducts: products.length,
-                totalInventoryValue,
-                outOfStock: products.filter(p => p.quantity === 0).length,
-                lowStock: lowStock.length,
-            },
-            lowStock,
-            allProducts: products.sort((a, b) => (a.quantity || 0) - (b.quantity || 0))
-        };
-
-        console.log('Generated stock report data:', reportData);
-        return reportData;
-    };
-
-    const generateDailySalesReport = (sales, startDate, endDate) => {
-        console.log('Generating sales report with:', { sales, startDate, endDate });
-
-        if (!Array.isArray(sales)) {
-            console.error('generateDailySalesReport: sales is not an array', sales);
-            return [];
-        }
-
-        const filteredSales = sales.filter(sale => {
-            const saleDate = sale.date;
-            return saleDate >= startDate && saleDate <= endDate;
-        });
-
-        console.log('Filtered sales for date range:', startDate, 'to', endDate, ':', filteredSales);
-        return filteredSales;
-    };
-
-    const generateProfitReport = (products, sales) => {
-        return { profit: 0, message: "Profit report not implemented yet" };
-    };
-
-    const generateCategorySalesReport = (sales, products) => {
-        return { categories: [], message: "Category report not implemented yet" };
-    };
-
-    const generateRevenueReport = (sales, period) => {
-        return { revenue: 0, message: "Revenue report not implemented yet" };
-    };
-
-    const generateCustomerReport = (sales) => {
-        return { customers: [], message: "Customer report not implemented yet" };
-    };
-
+    // ✅ Fetch products from backend
     useEffect(() => {
-        fetchData();
+        const loadProducts = async () => {
+            try {
+                setLoadingProducts(true);
+                const response = await fetch(`${API_BASE}/reports/products/`);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const data = await response.json();
+                setProducts(data);
+            } catch (err) {
+                console.error("Error fetching products:", err);
+                setError("⚠️ Failed to load products");
+                toast.error("⚠️ Failed to load products");
+            } finally {
+                setLoadingProducts(false);
+            }
+        };
+        loadProducts();
     }, []);
 
-    const fetchData = async () => {
+    // ✅ Handle input changes
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    // ✅ Toggle selected products
+    const handleProductToggle = (productId) => {
+        setFormData((prev) => {
+            const alreadySelected = prev.products.includes(productId);
+            return {
+                ...prev,
+                products: alreadySelected
+                    ? prev.products.filter((id) => id !== productId)
+                    : [...prev.products, productId],
+            };
+        });
+    };
+
+    // ✅ Handle form submission
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
         try {
-            const token = localStorage.getItem('token');
-            console.log('Fetching data with token:', token);
+            const response = await axios.post(`${API_BASE}/reports/api/reports/`, formData);
+            toast.success("✅ Report submitted successfully!");
 
-            const [salesRes, productsRes] = await Promise.all([
-                axios.get('http://127.0.0.1:8000/api/sales/sales/', {
-                    headers: { 'Authorization': `Token ${token}` }
-                }),
-                axios.get('http://127.0.0.1:8000/api/products/', {
-                    headers: { 'Authorization': `Token ${token}` }
-                })
-            ]);
+            console.log("Report Response:", response.data);
 
-            console.log('Sales API response:', salesRes.data);
-            console.log('Products API response:', productsRes.data);
+            // ✅ Navigate to dashboard after success
+            setTimeout(() => {
+                navigate("/dashboard");
+            }, 1500);
 
-            setSales(salesRes.data);
-            setProducts(productsRes.data);
-        } catch (err) {
-            console.error('Error fetching data:', err);
+        } catch (error) {
+            console.error("Error submitting report:", error);
+            toast.error("❌ Failed to submit report");
         } finally {
-            setLoading(false);
+            setIsSubmitting(false);
         }
     };
 
-    const generateReport = () => {
-        console.log('=== GENERATING REPORT ===');
-        console.log('Selected report:', selectedReport);
-        console.log('Available sales:', sales);
-        console.log('Available products:', products);
-        console.log('Date range:', dateRange);
-
-        let data = null;
-
-        switch (selectedReport) {
-            case 'stock':
-                data = generateStockReport(products);
-                break;
-            case 'sales':
-                data = generateDailySalesReport(sales, dateRange.start, dateRange.end);
-                break;
-            case 'profit':
-                data = generateProfitReport(products, sales);
-                break;
-            case 'category':
-                data = generateCategorySalesReport(sales, products);
-                break;
-            case 'revenue':
-                data = generateRevenueReport(sales, 'monthly');
-                break;
-            case 'customer':
-                data = generateCustomerReport(sales);
-                break;
-            default:
-                data = { error: 'Unknown report type' };
-                break;
-        }
-
-        console.log('Generated report data:', data);
-        setReportData(data);
-    };
-
-    const exportToCSV = (data, filename) => {
-        // CSV export implementation
-        console.log('Exporting to CSV:', filename, data);
-    };
-
-    if (loading) {
-        return <div className="p-6">Loading reports...</div>;
-    }
+    const today = new Date().toISOString().split("T")[0];
 
     return (
-        <div className="p-6 w-full">
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Business Reports</h1>
-
-            {/* Report Controls */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <select
-                        value={selectedReport}
-                        onChange={(e) => setSelectedReport(e.target.value)}
-                        className="border border-gray-300 rounded-lg px-3 py-2"
-                    >
-                        <option value="category">Sales by Category</option>
-                        <option value="customer">Customer Report</option>
-                        <option value="profit">Profit Analysis</option>
-                        <option value="revenue">Revenue Report</option>
-                        <option value="sales">Daily Sales Report</option>
-                        <option value="stock">Stock Level Report</option>
-                    </select>
-
-                    <input
-                        type="date"
-                        value={dateRange.start}
-                        onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                        className={`border border-gray-300 rounded-lg px-3 py-2 ${!showDateRange ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                        disabled={!showDateRange}
-                    />
-
-                    <input
-                        type="date"
-                        value={dateRange.end}
-                        onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                        className={`border border-gray-300 rounded-lg px-3 py-2 ${!showDateRange ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                        disabled={!showDateRange}
-                    />
-
-                    <button
-                        onClick={generateReport}
-                        className="bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600"
-                    >
-                        Generate Report
-                    </button>
-                </div>
-                {!showDateRange && (
-                    <p className="text-sm text-gray-500 mt-2">
-                        Date range is disabled for Stock Level Report
-                    </p>
-                )}
-            </div>
-
-            {/* Debug Info */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <h3 className="text-lg font-semibold text-yellow-800 mb-2">Debug Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <strong>Sales Data:</strong> {sales.length} records loaded
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md mx-auto">
+                <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <div className="mx-auto h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                            <span className="text-2xl">📊</span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Customer Report</h2>
+                        <p className="text-gray-600 text-sm">
+                            Fill in customer details and report information
+                        </p>
                     </div>
-                    <div>
-                        <strong>Products Data:</strong> {products.length} records loaded
-                    </div>
-                    <div>
-                        <strong>Selected Report:</strong> {selectedReport}
-                    </div>
-                    <div>
-                        <strong>Report Data:</strong> {reportData ? 'Available' : 'Not generated'}
-                    </div>
-                </div>
-            </div>
 
-            {/* Report Display */}
-            {reportData && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">
-                            {selectedReport.charAt(0).toUpperCase() + selectedReport.slice(1)} Report
-                            {showDateRange && (
-                                <span className="text-sm font-normal text-gray-600 ml-2">
-                                    ({dateRange.start} to {dateRange.end})
-                                </span>
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Customer Name */}
+                        <div>
+                            <label htmlFor="customer_name" className="block text-sm font-medium text-gray-700 mb-2">
+                                👤 Customer Name
+                            </label>
+                            <input
+                                type="text"
+                                id="customer_name"
+                                name="customer_name"
+                                value={formData.customer_name}
+                                onChange={handleChange}
+                                required
+                                placeholder="Enter customer full name"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                        </div>
+
+                        {/* Report Date */}
+                        <div>
+                            <label htmlFor="report_date" className="block text-sm font-medium text-gray-700 mb-2">
+                                📅 Report Date
+                            </label>
+                            <input
+                                type="date"
+                                id="report_date"
+                                name="report_date"
+                                value={formData.report_date}
+                                onChange={handleChange}
+                                max={today}
+                                required
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                        </div>
+
+                        {/* Accordion for Products */}
+                        <div className="border rounded-lg shadow-sm overflow-hidden">
+                            <button
+                                type="button"
+                                onClick={() => setAccordionOpen(!accordionOpen)}
+                                className="w-full flex justify-between items-center px-4 py-3 bg-gray-100 hover:bg-gray-200 transition"
+                            >
+                                <span className="font-medium text-gray-700">🛒 Select Products</span>
+                                <span>{accordionOpen ? "▲" : "▼"}</span>
+                            </button>
+
+                            {accordionOpen && (
+                                <div className="max-h-60 overflow-y-auto bg-white border-t">
+                                    {loadingProducts ? (
+                                        <p className="text-center py-3 text-gray-500 text-sm">Loading products...</p>
+                                    ) : error ? (
+                                        <p className="text-center py-3 text-red-500 text-sm">{error}</p>
+                                    ) : products.length > 0 ? (
+                                        products.map((product) => (
+                                            <label
+                                                key={product.id}
+                                                className="flex items-center justify-between px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                                            >
+                                                <span className="text-gray-700 text-sm">{product.name}</span>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.products.includes(product.id)}
+                                                    onChange={() => handleProductToggle(product.id)}
+                                                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                                                />
+                                            </label>
+                                        ))
+                                    ) : (
+                                        <p className="text-gray-500 text-sm px-4 py-3">No products available.</p>
+                                    )}
+                                </div>
                             )}
-                        </h2>
+                        </div>
+
+                        {/* Message */}
+                        <div>
+                            <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                                💬 Report Message
+                            </label>
+                            <textarea
+                                id="message"
+                                name="message"
+                                value={formData.message}
+                                onChange={handleChange}
+                                required
+                                rows="4"
+                                placeholder="Describe the issue, feedback, or report details..."
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                            />
+                            <div className="flex justify-between text-xs mt-2 text-gray-500">
+                                <span>{formData.message.length} characters</span>
+                                {formData.message.length > 500 && (
+                                    <span className="text-red-500">Maximum 500 characters recommended</span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
                         <button
-                            onClick={() => exportToCSV(reportData, `${selectedReport}_report`)}
-                            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                            type="submit"
+                            disabled={isSubmitting}
+                            className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-200 ${isSubmitting
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                }`}
                         >
-                            Export CSV
+                            {isSubmitting ? (
+                                <div className="flex items-center justify-center space-x-2">
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <span>Submitting...</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center space-x-2">
+                                    <span>📤</span>
+                                    <span>Submit Report</span>
+                                </div>
+                            )}
                         </button>
+                    </form>
+
+                    <div className="mt-6 text-center">
+                        <p className="text-xs text-gray-500">
+                            Customer report will be securely stored and accessible to authorized team members.
+                        </p>
                     </div>
-
-                    {/* Render different report types */}
-                    <ReportRenderer
-                        reportType={selectedReport}
-                        data={reportData}
-                        dateRange={dateRange}
-                    />
                 </div>
-            )}
-
-            {/* Instructions when no report is generated */}
-            {!reportData && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-                    <h3 className="text-lg font-semibold text-blue-800 mb-2">No Report Generated</h3>
-                    <p className="text-blue-700">
-                        Select a report type and click "Generate Report" to view your business data.
-                    </p>
-                </div>
-            )}
+            </div>
         </div>
     );
 };
 
-export default Reports;
+export default CustomerReportForm;

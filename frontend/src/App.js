@@ -36,6 +36,7 @@ import CustomerReportForm from './pages/CustomerReport';
 import ViewCustomerReport from './pages/ViewCustomerReport';
 import Settings from './pages/Settings';
 import ProfilePage from './pages/ProfilePage';
+import UserManagement from './pages/UserManagement';
 
 function App() {
   return (
@@ -204,13 +205,7 @@ function App() {
               <ProtectedRoute adminOnly={true}>
                 <DashboardLayout>
                   <div className="p-6">
-                    <div className="mb-6">
-                      <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
-                      <p className="text-gray-600 mt-1">Manage system users and permissions</p>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                      <p className="text-gray-600">User Management page content will go here.</p>
-                    </div>
+                    <UserManagement />
                   </div>
                 </DashboardLayout>
               </ProtectedRoute>
@@ -345,42 +340,6 @@ const PublicLayout = ({ children }) => {
     </div>
   );
 };
-
-
-// In your App.js - Update the DashboardLayout component
-// const DashboardLayout = ({ children }) => {
-//   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-//   return (
-//     <div className="min-h-screen flex flex-col">
-//       {/* Navbar with higher z-index */}
-//       <div className="z-50 relative">
-//         {/* <Navbar /> */}
-//       </div>
-
-//       <div className="flex flex-1 relative">
-//         {/* Sidebar with lower z-index than navbar but higher than content */}
-//         <div className="z-40">
-//           <Sidebar onToggle={setIsSidebarCollapsed} />
-//         </div>
-
-//         {/* Main Content Area */}
-//         <div className={`flex-1 transition-all duration-300 ${isSidebarCollapsed ? 'ml-20' : 'ml-64'
-//           }`}>
-//           <main className="h-full p-6">
-//             {children}
-//           </main>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-
-// In your App.js - Update the DashboardLayout component
-
-
-// In your App.js - Update the DashboardLayout component
 
 const DashboardLayout = ({ children }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
