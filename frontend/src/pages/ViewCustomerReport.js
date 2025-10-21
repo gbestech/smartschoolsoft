@@ -13,7 +13,12 @@ const ViewCustomerReport = () => {
     const [itemsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredReports, setFilteredReports] = useState([]);
-
+    const stripHtmlTags = (html) => {
+        if (!html) return '';
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
+    };
     // Fetch products separately to get their names
     const fetchProducts = async () => {
         try {
@@ -399,27 +404,35 @@ const ViewCustomerReport = () => {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
+                                                        
                                                         <div className="text-sm text-gray-900 max-w-md">
-                                                            {report.message && report.message.length > 100 ? (
+                                                            {report.message ? (
                                                                 <>
-                                                                    {report.message.slice(0, 100)}...
-                                                                    <button
-                                                                        onClick={() => toggleExpand(report.id)}
-                                                                        className="ml-1 text-indigo-600 hover:text-indigo-900 text-xs"
-                                                                    >
-                                                                        {expandedReport === report.id ? 'Show less' : 'Show more'}
-                                                                    </button>
+                                                                    {stripHtmlTags(report.message).length > 100 ? (
+                                                                        <>
+                                                                            {stripHtmlTags(report.message).slice(0, 100)}...
+                                                                            <button
+                                                                                onClick={() => toggleExpand(report.id)}
+                                                                                className="ml-1 text-indigo-600 hover:text-indigo-900 text-xs"
+                                                                            >
+                                                                                {expandedReport === report.id ? 'Show less' : 'Show more'}
+                                                                            </button>
+                                                                        </>
+                                                                    ) : (
+                                                                        stripHtmlTags(report.message)
+                                                                    )}
                                                                 </>
                                                             ) : (
-                                                                report.message || 'No message'
+                                                                'No message'
                                                             )}
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div className="text-sm text-gray-900 max-w-xs">
-                                                            {getProductNames(report.products)}
+                                                            {report.product_names ? report.product_names.join(', ') : 'No products'}
                                                         </div>
                                                     </td>
+                                                    
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-500">
                                                             {formatDate(report.report_date || report.created_at)}
@@ -450,13 +463,27 @@ const ViewCustomerReport = () => {
                                                                         <p><strong className="text-gray-600">Report Date:</strong> {formatDate(report.report_date)}</p>
                                                                         <p><strong className="text-gray-600">Created:</strong> {formatDate(report.created_at)}</p>
                                                                     </div>
-                                                                    <div>
-                                                                        <h5 className="font-medium text-gray-700 border-b pb-2 mb-3">Full Message</h5>
-                                                                        <p className="text-gray-900 whitespace-pre-line bg-gray-50 p-3 rounded-lg">
-                                                                            {report.message || 'No message provided'}
-                                                                        </p>
-                                                                    </div>
+                                                                    {report.message ? (
+                                                                        <>
+                                                                            {stripHtmlTags(report.message).length > 100 ? (
+                                                                                <>
+                                                                                    {stripHtmlTags(report.message).slice(0, 100)}...
+                                                                                    <button
+                                                                                        onClick={() => toggleExpand(report.id)}
+                                                                                        className="ml-1 text-indigo-600 hover:text-indigo-900 text-xs"
+                                                                                    >
+                                                                                        {expandedReport === report.id ? 'Show less' : 'Show more'}
+                                                                                    </button>
+                                                                                </>
+                                                                            ) : (
+                                                                                stripHtmlTags(report.message)
+                                                                            )}
+                                                                        </>
+                                                                    ) : (
+                                                                        'No message'
+                                                                    )}
                                                                 </div>
+                                                            
 
                                                                 {report.products && report.products.length > 0 && (
                                                                     <div>
@@ -467,7 +494,7 @@ const ViewCustomerReport = () => {
                                                                                     <div key={product.id || index} className="flex items-center space-x-3 bg-white p-3 rounded border">
                                                                                         <span className="w-3 h-3 bg-indigo-500 rounded-full flex-shrink-0"></span>
                                                                                         <span className="text-sm font-medium text-gray-900">
-                                                                                            {product.name || `Product ${product.id}`}
+                                                                                            {report.product_names ? report.product_names.join(', ') : 'No products'}
                                                                                         </span>
                                                                                     </div>
                                                                                 ))}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -6,36 +7,33 @@ const UserManagement = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [formData, setFormData] = useState({
-        name: '',
+        username: '',
         email: '',
-        role: 'user',
-        status: 'active'
+        first_name: '',
+        last_name: '',
+        is_active: true,
+        is_staff: false,
+        is_superuser: false
     });
 
-    // API base URL - replace with your actual API endpoint
-    const API_URL = 'https://your-api-domain.com/api/users';
+    // Django API configuration
+    const API_BASE = 'http://localhost:8000';
+    const USERS_API = `${API_BASE}/api/users/`;
 
-    // Fetch users from database
+    // Fetch users from Django backend
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const response = await fetch(API_URL, {
-                method: 'GET',
+            const response = await axios.get(USERS_API, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Token ${localStorage.getItem('token')}`
                 }
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch users');
-            }
-
-            const data = await response.json();
-            setUsers(data);
+            setUsers(response.data);
         } catch (error) {
             console.error('Error fetching users:', error);
-            alert('Failed to load users. Please try again.');
+            alert('Failed to load users. Please check your connection and authentication.');
         } finally {
             setLoading(false);
         }
@@ -46,10 +44,10 @@ const UserManagement = () => {
     }, []);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: value
+            [name]: type === 'checkbox' ? checked : value
         }));
     };
 
@@ -58,37 +56,61 @@ const UserManagement = () => {
         setLoading(true);
 
         try {
-            const url = editingUser ? `${API_URL}/${editingUser.id}` : API_URL;
-            const method = editingUser ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to save user');
-            }
-
-            const savedUser = await response.json();
+            // Prepare data for Django
+            const userData = {
+                username: formData.username,
+                email: formData.email,
+                first_name: formData.first_name,
+                last_name: formData.last_name,
+                is_active: formData.is_active,
+                is_staff: formData.is_staff,
+                is_superuser: formData.is_superuser
+            };
 
             if (editingUser) {
+                // Update existing user
+                const response = await axios.put(
+                    `${USERS_API}${editingUser.id}/`,
+                    userData,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Token ${localStorage.getItem('token')}`
+                        }
+                    }
+                );
                 setUsers(users.map(user =>
-                    user.id === editingUser.id ? savedUser : user
+                    user.id === editingUser.id ? response.data : user
                 ));
+                alert('User updated successfully!');
             } else {
-                setUsers([...users, savedUser]);
+                // Create new user - Django might require password for new users
+                const newUserData = {
+                    ...userData,
+                    password: 'defaultpassword123' // You might want to handle this differently
+                };
+
+                const response = await axios.post(
+                    USERS_API,
+                    newUserData,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Token ${localStorage.getItem('token')}`
+                        }
+                    }
+                );
+                setUsers([...users, response.data]);
+                alert('User created successfully!');
             }
 
             resetForm();
-            alert(`User ${editingUser ? 'updated' : 'created'} successfully!`);
         } catch (error) {
             console.error('Error saving user:', error);
-            alert('Failed to save user. Please try again.');
+            const errorMessage = error.response?.data
+                ? JSON.stringify(error.response.data)
+                : 'Failed to save user. Please try again.';
+            alert(`Error: ${errorMessage}`);
         } finally {
             setLoading(false);
         }
@@ -97,10 +119,13 @@ const UserManagement = () => {
     const handleEdit = (user) => {
         setEditingUser(user);
         setFormData({
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            status: user.status
+            username: user.username || '',
+            email: user.email || '',
+            first_name: user.first_name || '',
+            last_name: user.last_name || '',
+            is_active: user.is_active || true,
+            is_staff: user.is_staff || false,
+            is_superuser: user.is_superuser || false
         });
         setShowModal(true);
     };
@@ -109,17 +134,11 @@ const UserManagement = () => {
         if (window.confirm('Are you sure you want to delete this user?')) {
             setLoading(true);
             try {
-                const response = await fetch(`${API_URL}/${userId}`, {
-                    method: 'DELETE',
+                await axios.delete(`${USERS_API}${userId}/`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Token ${localStorage.getItem('token')}`
                     }
                 });
-
-                if (!response.ok) {
-                    throw new Error('Failed to delete user');
-                }
-
                 setUsers(users.filter(user => user.id !== userId));
                 alert('User deleted successfully!');
             } catch (error) {
@@ -132,29 +151,26 @@ const UserManagement = () => {
     };
 
     const toggleUserStatus = async (userId, currentStatus) => {
-        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        const newStatus = !currentStatus;
 
         setLoading(true);
         try {
-            const response = await fetch(`${API_URL}/${userId}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
+            const response = await axios.patch(
+                `${USERS_API}${userId}/`,
+                { is_active: newStatus },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${localStorage.getItem('token')}`
+                    }
+                }
+            );
 
-            if (!response.ok) {
-                throw new Error('Failed to update user status');
-            }
-
-            const updatedUser = await response.json();
             setUsers(users.map(user =>
-                user.id === userId ? updatedUser : user
+                user.id === userId ? response.data : user
             ));
 
-            alert(`User ${newStatus === 'active' ? 'enabled' : 'disabled'} successfully!`);
+            alert(`User ${newStatus ? 'activated' : 'deactivated'} successfully!`);
         } catch (error) {
             console.error('Error updating user status:', error);
             alert('Failed to update user status. Please try again.');
@@ -163,23 +179,55 @@ const UserManagement = () => {
         }
     };
 
-    const enableUser = (userId) => {
-        toggleUserStatus(userId, 'inactive');
+    const activateUser = (userId) => {
+        const user = users.find(u => u.id === userId);
+        if (user) {
+            toggleUserStatus(userId, user.is_active);
+        }
     };
 
-    const disableUser = (userId) => {
-        toggleUserStatus(userId, 'active');
+    const deactivateUser = (userId) => {
+        const user = users.find(u => u.id === userId);
+        if (user) {
+            toggleUserStatus(userId, user.is_active);
+        }
     };
 
     const resetForm = () => {
         setFormData({
-            name: '',
+            username: '',
             email: '',
-            role: 'user',
-            status: 'active'
+            first_name: '',
+            last_name: '',
+            is_active: true,
+            is_staff: false,
+            is_superuser: false
         });
         setEditingUser(null);
         setShowModal(false);
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        try {
+            return new Date(dateString).toLocaleDateString();
+        } catch (error) {
+            return 'Invalid Date';
+        }
+    };
+
+    // Helper function to get role display
+    const getUserRole = (user) => {
+        if (user.is_superuser) return 'Superuser';
+        if (user.is_staff) return 'Staff';
+        return 'User';
+    };
+
+    // Helper function to get role color
+    const getRoleColor = (user) => {
+        if (user.is_superuser) return 'bg-red-100 text-red-800';
+        if (user.is_staff) return 'bg-blue-100 text-blue-800';
+        return 'bg-purple-100 text-purple-800';
     };
 
     return (
@@ -187,7 +235,12 @@ const UserManagement = () => {
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+                        <p className="text-gray-600 mt-2">
+                            {users.length} user{users.length !== 1 ? 's' : ''} in system
+                        </p>
+                    </div>
                     <button
                         className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() => setShowModal(true)}
@@ -201,11 +254,14 @@ const UserManagement = () => {
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                     {loading ? (
                         <div className="flex justify-center items-center py-12">
-                            <div className="text-gray-600 text-lg">Loading users...</div>
+                            <div className="flex items-center space-x-2">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                <div className="text-gray-600 text-lg">Loading users...</div>
+                            </div>
                         </div>
                     ) : users.length === 0 ? (
                         <div className="text-center py-12">
-                            <p className="text-gray-600 mb-4">No users found.</p>
+                            <p className="text-gray-600 mb-4">No users found in system.</p>
                             <button
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
                                 onClick={() => setShowModal(true)}
@@ -219,11 +275,12 @@ const UserManagement = () => {
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
@@ -231,31 +288,36 @@ const UserManagement = () => {
                                     {users.map(user => (
                                         <tr
                                             key={user.id}
-                                            className={user.status === 'inactive' ? 'bg-gray-50' : 'hover:bg-gray-50'}
+                                            className={!user.is_active ? 'bg-gray-50' : 'hover:bg-gray-50'}
                                         >
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.id}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {user.username || 'N/A'}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {user.email || 'N/A'}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {user.first_name || user.last_name
+                                                    ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                                                    : 'N/A'
+                                                }
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'admin'
-                                                        ? 'bg-blue-100 text-blue-800'
-                                                        : user.role === 'moderator'
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-purple-100 text-purple-800'
-                                                    }`}>
-                                                    {user.role}
+                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user)}`}>
+                                                    {getUserRole(user)}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.status === 'active'
+                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.is_active
                                                         ? 'bg-green-100 text-green-800'
                                                         : 'bg-red-100 text-red-800'
                                                     }`}>
-                                                    {user.status}
+                                                    {user.is_active ? 'Active' : 'Inactive'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {new Date(user.createdAt).toLocaleDateString()}
+                                                {formatDate(user.last_login)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <div className="flex space-x-2">
@@ -266,21 +328,21 @@ const UserManagement = () => {
                                                     >
                                                         Edit
                                                     </button>
-                                                    {user.status === 'active' ? (
+                                                    {user.is_active ? (
                                                         <button
                                                             className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                            onClick={() => disableUser(user.id)}
+                                                            onClick={() => deactivateUser(user.id)}
                                                             disabled={loading}
                                                         >
-                                                            Disable
+                                                            Deactivate
                                                         </button>
                                                     ) : (
                                                         <button
                                                             className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                            onClick={() => enableUser(user.id)}
+                                                            onClick={() => activateUser(user.id)}
                                                             disabled={loading}
                                                         >
-                                                            Enable
+                                                            Activate
                                                         </button>
                                                     )}
                                                     <button
@@ -320,24 +382,25 @@ const UserManagement = () => {
                             <form onSubmit={handleSubmit} className="p-6">
                                 <div className="space-y-4">
                                     <div>
-                                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Name
+                                        <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                                            Username *
                                         </label>
                                         <input
                                             type="text"
-                                            id="name"
-                                            name="name"
-                                            value={formData.name}
+                                            id="username"
+                                            name="username"
+                                            value={formData.username}
                                             onChange={handleInputChange}
                                             required
                                             disabled={loading}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                                            placeholder="Enter username"
                                         />
                                     </div>
 
                                     <div>
                                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Email
+                                            Email *
                                         </label>
                                         <input
                                             type="email"
@@ -348,42 +411,80 @@ const UserManagement = () => {
                                             required
                                             disabled={loading}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                                            placeholder="Enter user email"
                                         />
                                     </div>
 
-                                    <div>
-                                        <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Role
-                                        </label>
-                                        <select
-                                            id="role"
-                                            name="role"
-                                            value={formData.role}
-                                            onChange={handleInputChange}
-                                            disabled={loading}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
-                                        >
-                                            <option value="user">User</option>
-                                            <option value="admin">Admin</option>
-                                            <option value="moderator">Moderator</option>
-                                        </select>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
+                                                First Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="first_name"
+                                                name="first_name"
+                                                value={formData.first_name}
+                                                onChange={handleInputChange}
+                                                disabled={loading}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                                                placeholder="First name"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
+                                                Last Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="last_name"
+                                                name="last_name"
+                                                value={formData.last_name}
+                                                onChange={handleInputChange}
+                                                disabled={loading}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                                                placeholder="Last name"
+                                            />
+                                        </div>
                                     </div>
 
-                                    <div>
-                                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Status
-                                        </label>
-                                        <select
-                                            id="status"
-                                            name="status"
-                                            value={formData.status}
-                                            onChange={handleInputChange}
-                                            disabled={loading}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
-                                        >
-                                            <option value="active">Active</option>
-                                            <option value="inactive">Inactive</option>
-                                        </select>
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-medium text-gray-700">Permissions</label>
+                                        <div className="space-y-2">
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    name="is_active"
+                                                    checked={formData.is_active}
+                                                    onChange={handleInputChange}
+                                                    disabled={loading}
+                                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                />
+                                                <span className="ml-2 text-sm text-gray-600">Active</span>
+                                            </label>
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    name="is_staff"
+                                                    checked={formData.is_staff}
+                                                    onChange={handleInputChange}
+                                                    disabled={loading}
+                                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                />
+                                                <span className="ml-2 text-sm text-gray-600">Staff Member</span>
+                                            </label>
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    name="is_superuser"
+                                                    checked={formData.is_superuser}
+                                                    onChange={handleInputChange}
+                                                    disabled={loading}
+                                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                />
+                                                <span className="ml-2 text-sm text-gray-600">Superuser</span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
 

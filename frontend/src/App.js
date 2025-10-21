@@ -37,6 +37,7 @@ import ViewCustomerReport from './pages/ViewCustomerReport';
 import Settings from './pages/Settings';
 import ProfilePage from './pages/ProfilePage';
 import UserManagement from './pages/UserManagement';
+import HelpSupport from './pages/HelpSuppor';
 
 function App() {
   return (
@@ -180,15 +181,15 @@ function App() {
             } />
             <Route path="/profile" element={
               <ProtectedRoute>
-                <DashboardLayout>
+               
                   <ProfilePage />
-                </DashboardLayout>
+            
               </ProtectedRoute>
             } />
             <Route path="/help" element={
               <ProtectedRoute>
                 <DashboardLayout>
-                  <Help />
+                 <HelpSupport />
                 </DashboardLayout>
               </ProtectedRoute>
             } />

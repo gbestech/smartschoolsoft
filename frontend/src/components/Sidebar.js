@@ -23,7 +23,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
             ]
         },
         { path: '/orders', icon: '🛒', label: 'Orders', key: 'orders' },
-        { path: '/customerReport', label: 'Customer Report', key: 'reprot' },
+        { path: '/customerReport',icon: '📈', label: 'Customer Report', key: 'reprot' },
         { path: '/messages', icon: '💬', label: 'Messages', key: 'messages' },
         { path: '/settings', icon: '⚙️', label: 'Settings', key: 'settings' },
         { path: '/viewCustomerReport', icon: '⚙️', label: 'View Customer Report', key: 'viewcustomerreport' },
@@ -46,11 +46,11 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                 { path: '/orders', label: 'Order', key: 'order' },
             ]
         },
-        { path: '/reports', icon: '📈', label: 'Reports', key: 'reports' },
+        // { path: '/reports', icon: '📈', label: 'Reports', key: 'reports' },
         { path: '/admin/settings', icon: '⚙️', label: 'System Settings', key: 'settings' },
         { path: '/activitylogs', icon: '📋', label: 'Activity Logs', key: 'activitylogs' },
-        { path: '/debtors', label: 'Debtors', key: 'debtor' },
-        { path: '/customerReport', label: 'Customer Report', key: 'reprot' },
+        { path: '/debtors', icon: '💳', label: 'Debtors', key: 'debtor' },
+        { path: '/customerReport', icon: '📈', label: 'Customer Report', key: 'reprot' },
         { path: '/viewCustomerReport', icon: '⚙️', label: 'View Customer Report', key: 'viewcustomerreport' },
     ];
 
