@@ -380,6 +380,7 @@ const AddProduct = () => {
               <option value="FRUIT">Fruit</option>
               <option value="DRINKS">Drinks</option>
               <option value="GRAIN">Grain</option>
+              <option value="FOOD">Food</option>
             </select>
           </div>
 
@@ -436,14 +437,14 @@ const AddProduct = () => {
             </button>
 
             {/* ✅ NEW: Delete Button */}
-            <button
+            {/* <button
               type="button"
               onClick={handleDelete}
               disabled={loading || !formData.name.trim()}
               className="flex-1 bg-red-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center"
             >
               🗑️ Delete Product
-            </button>
+            </button> */}
 
             <button
               type="button"

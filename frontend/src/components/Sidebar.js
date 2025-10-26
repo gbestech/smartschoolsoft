@@ -23,7 +23,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
             ]
         },
         { path: '/orders', icon: '🛒', label: 'Orders', key: 'orders' },
-        { path: '/customerReport',icon: '📈', label: 'Customer Report', key: 'reprot' },
+        { path: '/customerReport', icon: '📈', label: 'Customer Report', key: 'reprot' },
         { path: '/messages', icon: '💬', label: 'Messages', key: 'messages' },
         { path: '/settings', icon: '⚙️', label: 'Settings', key: 'settings' },
         { path: '/viewCustomerReport', icon: '⚙️', label: 'View Customer Report', key: 'viewcustomerreport' },
@@ -39,14 +39,16 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
             key: 'products',
             submenu: [
                 { path: '/admin/products/all', label: 'All Products', key: 'all-products' },
-                { path: '/admin/products/categories', label: 'Categories', key: 'categories' },
-                { path: '/admin/products/inventory', label: 'Inventory', key: 'inventory' },
+                { path: '/admin/products/inventory', icon: '📈', label: 'All Inventory', key: 'all-inventory' },
+                // { path: '/admin/products/categories', label: 'Categories', key: 'categories' },
+
                 { path: '/admin/products/analytics', label: 'Analytics', key: 'analytics' },
                 { path: '/admin/products/add', label: 'Add New', key: 'add-product' },
                 { path: '/orders', label: 'Order', key: 'order' },
             ]
         },
         // { path: '/reports', icon: '📈', label: 'Reports', key: 'reports' },
+       
         { path: '/admin/settings', icon: '⚙️', label: 'System Settings', key: 'settings' },
         { path: '/activitylogs', icon: '📋', label: 'Activity Logs', key: 'activitylogs' },
         { path: '/debtors', icon: '💳', label: 'Debtors', key: 'debtor' },
@@ -126,8 +128,8 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                                 // Dropdown items
                                 <div
                                     className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${hasActiveSubmenu(item.submenu)
-                                            ? 'bg-blue-50 text-blue-600 border border-blue-200'
-                                            : 'text-gray-700 hover:bg-gray-100'
+                                        ? 'bg-blue-50 text-blue-600 border border-blue-200'
+                                        : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                     onClick={(e) => handleDropdownClick(item, e)}
                                 >
@@ -146,8 +148,8 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                                 <Link
                                     to={item.path}
                                     className={`flex items-center p-3 rounded-lg transition-colors ${isActive(item.path)
-                                            ? 'bg-blue-500 text-white shadow-sm'
-                                            : 'text-gray-700 hover:bg-gray-100'
+                                        ? 'bg-blue-500 text-white shadow-sm'
+                                        : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                 >
                                     <span className="text-lg mr-3">{item.icon}</span>
@@ -165,8 +167,8 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                                             key={subItem.key}
                                             to={subItem.path}
                                             className={`block py-2 px-3 rounded-lg text-sm transition-colors ${isActive(subItem.path)
-                                                    ? 'bg-blue-100 text-blue-700 font-medium'
-                                                    : 'text-gray-600 hover:bg-gray-100'
+                                                ? 'bg-blue-100 text-blue-700 font-medium'
+                                                : 'text-gray-600 hover:bg-gray-100'
                                                 }`}
                                             onClick={(e) => handleSubmenuClick(subItem.path, e)}
                                         >
@@ -186,8 +188,8 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                             key={item.key}
                             to={item.path}
                             className={`flex items-center p-3 rounded-lg transition-colors ${isActive(item.path)
-                                    ? 'bg-blue-500 text-white shadow-sm'
-                                    : 'text-gray-700 hover:bg-gray-100'
+                                ? 'bg-blue-500 text-white shadow-sm'
+                                : 'text-gray-700 hover:bg-gray-100'
                                 }`}
                         >
                             <span className="text-lg mr-3">{item.icon}</span>

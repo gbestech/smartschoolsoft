@@ -900,15 +900,20 @@ const Orders = () => {
                                 />
                             </div>
                             {amountPaid && (
-                                <div className={`border rounded-lg p-4 ${balance > 0 ? 'bg-orange-50 border-orange-200' : 'bg-green-50 border-green-200'}`}>
+                                <div className={`border rounded-lg p-4 ${balance > 0 ? 'bg-orange-50 border-orange-200' : Number(amountPaid) > total ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
                                     <div className="flex justify-between items-center">
-                                        <span className={`font-medium ${balance > 0 ? 'text-orange-800' : 'text-green-800'}`}>
-                                            {balance > 0 ? 'Balance Due:' : 'Fully Paid!'}
+                                        <span className={`font-medium ${balance > 0 ? 'text-orange-800' : Number(amountPaid) > total ? 'text-red-800' : 'text-green-800'}`}>
+                                            {Number(amountPaid) > total ? 'Overpayment!' : balance > 0 ? 'Balance Due:' : 'Fully Paid!'}
                                         </span>
-                                        <span className={`text-lg font-bold ${balance > 0 ? 'text-orange-800' : 'text-green-800'}`}>
-                                            ₦{Number(balance).toLocaleString()}
+                                        <span className={`text-lg font-bold ${balance > 0 ? 'text-orange-800' : Number(amountPaid) > total ? 'text-red-800' : 'text-green-800'}`}>
+                                            {Number(amountPaid) > total ? `-₦${(Number(amountPaid) - total).toLocaleString()}` : `₦${Number(balance).toLocaleString()}`}
                                         </span>
                                     </div>
+                                    {Number(amountPaid) > total && (
+                                        <p className="text-red-600 text-sm mt-2">
+                                            Amount paid cannot exceed total amount!
+                                        </p>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -921,7 +926,8 @@ const Orders = () => {
                             </button>
                             <button
                                 onClick={confirmSale}
-                                className="flex-1 bg-green-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors"
+                                disabled={Number(amountPaid) > total}
+                                className="flex-1 bg-green-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
                             >
                                 Confirm Sale
                             </button>

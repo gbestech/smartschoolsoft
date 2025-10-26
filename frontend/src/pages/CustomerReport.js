@@ -130,7 +130,7 @@ const CustomerReportForm = ({ onSuccess }) => {
             });
 
             setTimeout(() => {
-                navigate("/dashboarViewCustomerReportd");
+                navigate("/dashboard");
             }, 1500);
 
         } catch (error) {

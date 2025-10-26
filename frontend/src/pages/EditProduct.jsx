@@ -523,6 +523,7 @@ const EditProduct = () => {
                     <option value="FRUIT">Fruit</option>
                     <option value="DRINKS">Drinks</option>
                     <option value="GRAIN">Grain</option>
+                    <option value="FOOD">Food</option>
                   </select>
                 </div>
               </div>

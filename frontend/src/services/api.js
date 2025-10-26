@@ -1,20 +1,29 @@
-// src/services/api.js - Fix the baseURL and endpoints
+// services/api.js
 import axios from 'axios';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const api = axios.create({
-    baseURL: 'http://localhost:8000', // Remove /api from baseURL
-    headers: {
-        'Content-Type': 'application/json',
-    },
+    baseURL: API_BASE_URL,
+    timeout: 10000,
 });
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Log all requests for debugging
+        console.log('🚀 API Request:', {
+            method: config.method?.toUpperCase(),
+            url: config.url,
+            baseURL: config.baseURL,
+            hasToken: !!token
+        });
+
         return config;
     },
     (error) => {
@@ -22,57 +31,58 @@ api.interceptors.request.use(
     }
 );
 
-// Response interceptor to handle errors
+// Response interceptor for better error handling
 api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
-
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-
-            try {
-                const refreshToken = localStorage.getItem('refreshToken');
-                if (refreshToken) {
-                    const response = await axios.post('http://localhost:8000/api/auth/token/refresh/', {
-                        refresh: refreshToken
-                    });
-
-                    const newToken = response.data.access;
-                    localStorage.setItem('authToken', newToken);
-
-                    // Retry the original request with new token
-                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
-                    return api(originalRequest);
-                }
-            } catch (refreshError) {
-                // Refresh token failed, logout user
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('refreshToken');
-                localStorage.removeItem('userData');
-                window.location.href = '/login';
-                return Promise.reject(refreshError);
-            }
-        }
-
+    (response) => {
+        console.log('✅ API Response Success:', {
+            url: response.config.url,
+            status: response.status
+        });
+        return response;
+    },
+    (error) => {
+        console.error('❌ API Response Error:', {
+            url: error.config?.url,
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data
+        });
         return Promise.reject(error);
     }
 );
 
-// Authentication API
-export const authAPI = {
-    login: (credentials) => api.post('/api/auth/login/', credentials),
-    register: (userData) => api.post('/api/auth/register/', userData),
-    refreshToken: (refresh) => api.post('/api/auth/token/refresh/', { refresh }),
-};
-
-// User API - Fixed endpoints
+// CORRECT API endpoints - match your Django URLs
 export const userAPI = {
-    getMe: () => api.get('/api/auth/me/'),
-    updateMe: (data) => api.patch('/api/auth/me/', data),
-    uploadProfilePicture: (formData) => api.post('/api/auth/profile-picture/', formData, {
+    // User profile endpoints
+    getMe: () => api.get('/users/me/'),
+    updateMe: (data) => api.put('/users/me/', data),  // Use PUT instead of PATCH
+    partialUpdateMe: (data) => api.patch('/users/me/', data),  // Alternative PATCH
+
+    // Profile picture endpoint
+    uploadProfilePicture: (formData) => api.patch('/users/me/profile-picture/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
+
+    // Test different endpoints
+    testEndpoints: async () => {
+        const endpoints = [
+            '/users/me/',
+            '/profile/',
+            '/auth/me/'
+        ];
+
+        for (const endpoint of endpoints) {
+            try {
+                console.log(`🔍 Testing endpoint: ${endpoint}`);
+                const response = await api.get(endpoint);
+                console.log(`✅ Endpoint works: ${endpoint}`);
+                return endpoint;
+            } catch (error) {
+                console.log(`❌ Endpoint failed: ${endpoint} - ${error.response?.status}`);
+            }
+        }
+        return null;
+    }
 };
 
 export default api;

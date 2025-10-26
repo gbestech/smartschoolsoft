@@ -20,7 +20,6 @@ import Messages from './components/Messages';
 
 import Help from './components/Help';
 import AllProducts from './AllProducts';
-import ProductInventory from './components/ProductInventory';
 import AddProduct from './components/AddProduct';
 // import Profile from './components/Profile';
 
@@ -38,6 +37,8 @@ import Settings from './pages/Settings';
 import ProfilePage from './pages/ProfilePage';
 import UserManagement from './pages/UserManagement';
 import HelpSupport from './pages/HelpSuppor';
+import Inventory from './Inventory';
+
 
 function App() {
   return (
@@ -99,17 +100,24 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             } />
-            <Route path="/products/inventory" element={
+            {/* <Route path="/products/inventory" element={
               <ProtectedRoute>
                 <DashboardLayout>
-                  <ProductInventory />
+                  <Inventory />
                 </DashboardLayout>
               </ProtectedRoute>
-            } />
+            } /> */}
             <Route path="/products/add" element={
               <ProtectedRoute>
                 <DashboardLayout>
                   <AddProduct />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/inventory" element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Inventory />
                 </DashboardLayout>
               </ProtectedRoute>
             } />
@@ -181,15 +189,15 @@ function App() {
             } />
             <Route path="/profile" element={
               <ProtectedRoute>
-               
-                  <ProfilePage />
-            
+
+                <ProfilePage />
+
               </ProtectedRoute>
             } />
             <Route path="/help" element={
               <ProtectedRoute>
                 <DashboardLayout>
-                 <HelpSupport />
+                  <HelpSupport />
                 </DashboardLayout>
               </ProtectedRoute>
             } />
@@ -220,17 +228,17 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             } />
+            <Route path="/admin/products/inventory" element={
+              <ProtectedRoute adminOnly={true}>
+                <DashboardLayout>
+                  <Inventory />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
             <Route path="/admin/products/categories" element={
               <ProtectedRoute adminOnly={true}>
                 <DashboardLayout>
                   <ProductCategories />
-                </DashboardLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/products/inventory" element={
-              <ProtectedRoute adminOnly={true}>
-                <DashboardLayout>
-                  <ProductInventory />
                 </DashboardLayout>
               </ProtectedRoute>
             } />

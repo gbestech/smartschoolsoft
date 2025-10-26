@@ -8,8 +8,6 @@ urlpatterns = [
     path('api/reports/<int:pk>/', views.CustomerReportDetailView.as_view(), name='report-detail'),
     path('api/create-report/', views.create_report, name='create-report'),
     path('products/', views.product_list, name='product-list'),  # ✅ this line is important
-    path('api/reports/', views.report_list, name='report-list'),
-    path('api/reports/count/', views.report_count, name='report-count'),  # New endpoint
 
   
     
