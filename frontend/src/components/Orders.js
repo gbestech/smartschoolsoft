@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toWords } from "number-to-words";
@@ -903,7 +902,7 @@ const Orders = () => {
                                 <div className={`border rounded-lg p-4 ${balance > 0 ? 'bg-orange-50 border-orange-200' : Number(amountPaid) > total ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
                                     <div className="flex justify-between items-center">
                                         <span className={`font-medium ${balance > 0 ? 'text-orange-800' : Number(amountPaid) > total ? 'text-red-800' : 'text-green-800'}`}>
-                                            {Number(amountPaid) > total ? 'Overpayment!' : balance > 0 ? 'Balance Due:' : 'Fully Paid!'}
+                                            {Number(amountPaid) > total ? 'Your Customer is maing Overpayment!' : balance > 0 ? 'Balance Due:' : 'Fully Paid!'}
                                         </span>
                                         <span className={`text-lg font-bold ${balance > 0 ? 'text-orange-800' : Number(amountPaid) > total ? 'text-red-800' : 'text-green-800'}`}>
                                             {Number(amountPaid) > total ? `-₦${(Number(amountPaid) - total).toLocaleString()}` : `₦${Number(balance).toLocaleString()}`}

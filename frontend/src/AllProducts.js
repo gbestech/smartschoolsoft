@@ -383,12 +383,12 @@ const AllProducts = () => {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     Quantity
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                {/* <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     Profit
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     Actions
-                                </th>
+                                </th> */}
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -435,7 +435,7 @@ const AllProducts = () => {
                                                 {product.quantity} units
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <div className="text-green-600 font-medium">
                                                 ₦{totalProductProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </div>
@@ -445,8 +445,8 @@ const AllProducts = () => {
                                             <div className="text-gray-400 text-xs">
                                                 ₦{profitPerItem.toFixed(2)} per item
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        </td> */}
+                                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div className="flex space-x-2">
                                                 <button
                                                     onClick={() => handleEdit(product)}
@@ -467,7 +467,7 @@ const AllProducts = () => {
                                                     Delete
                                                 </button>
                                             </div>
-                                        </td>
+                                        </td> */}
                                     </tr>
                                 );
                             })}

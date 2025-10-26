@@ -45,6 +45,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                 { path: '/admin/products/analytics', label: 'Analytics', key: 'analytics' },
                 { path: '/admin/products/add', label: 'Add New', key: 'add-product' },
                 { path: '/orders', label: 'Order', key: 'order' },
+               
             ]
         },
         // { path: '/reports', icon: '📈', label: 'Reports', key: 'reports' },
@@ -54,6 +55,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
         { path: '/debtors', icon: '💳', label: 'Debtors', key: 'debtor' },
         { path: '/customerReport', icon: '📈', label: 'Customer Report', key: 'reprot' },
         { path: '/viewCustomerReport', icon: '⚙️', label: 'View Customer Report', key: 'viewcustomerreport' },
+        { path: '/supplier', label: 'Supplier', key: 'supplier' },
     ];
 
     const commonMenuItems = [

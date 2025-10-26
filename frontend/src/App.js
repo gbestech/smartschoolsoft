@@ -38,6 +38,7 @@ import ProfilePage from './pages/ProfilePage';
 import UserManagement from './pages/UserManagement';
 import HelpSupport from './pages/HelpSuppor';
 import Inventory from './Inventory';
+import Suppliers from './pages/Supplier';
 
 
 function App() {
@@ -127,6 +128,13 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <Orders />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/supplier" element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Suppliers />
                 </DashboardLayout>
               </ProtectedRoute>
             } />

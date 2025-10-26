@@ -1,3 +1,475 @@
+// import React, { useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import { ToastContainer, toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+
+// const AddProduct = () => {
+//   const navigate = useNavigate();
+
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     description: "",
+//     price: "",
+//     selling_price: "",
+//     quantity: "",
+//     category: "ELECTRONICS",
+//   });
+
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState("");
+//   const [success, setSuccess] = useState("");
+//   const [isModalOpen, setIsModalOpen] = useState(true);
+
+//   const handleChange = (e) => {
+//     setFormData({
+//       ...formData,
+//       [e.target.name]: e.target.value,
+//     });
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+//     setError("");
+//     setSuccess("");
+
+//     try {
+//       const token = localStorage.getItem("token");
+//       console.log("Sending product data:", formData);
+//       console.log("Token exists:", !!token);
+
+//       const response = await axios.post(
+//         "http://127.0.0.1:8000/api/products/",
+//         formData,
+//         {
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Token ${token}`,
+//           },
+//           timeout: 10000,
+//         }
+//       );
+
+//       console.log("Product added successfully:", response.data);
+//       setSuccess("✅ Product has been added successfully!");
+//       toast.success("✅ Product has been added successfully!");
+
+//       setFormData({
+//         name: "",
+//         description: "",
+//         price: "",
+//         selling_price: "",
+//         quantity: "",
+//         category: "ELECTRONICS",
+//       });
+
+//       setTimeout(() => {
+//         setIsModalOpen(false);
+//         navigate("/products/all");
+//       }, 1000);
+//     } catch (err) {
+//       console.error("Error adding product:", err);
+//       console.error("Full error object:", err);
+//       console.error("Error response data:", err.response?.data);
+//       console.error("Error response status:", err.response?.status);
+
+//       let errorMessage = "";
+
+//       if (err.response) {
+//         if (err.response.status === 400) {
+//           const errors = err.response.data;
+//           console.log("Validation errors:", errors);
+//           errorMessage = "Please verify your input:\n";
+
+//           if (typeof errors === "object") {
+//             Object.keys(errors).forEach((key) => {
+//               if (Array.isArray(errors[key])) {
+//                 errors[key].forEach((msg) => {
+//                   errorMessage += `• ${key}: ${msg}\n`;
+//                 });
+//               } else {
+//                 errorMessage += `• ${key}: ${errors[key]}\n`;
+//               }
+//             });
+//           } else if (typeof errors === "string") {
+//             errorMessage = errors;
+//           } else if (errors.detail) {
+//             errorMessage = errors.detail;
+//           }
+
+//           toast.error("⚠️ Validation error — please check your input");
+//         } else if (err.response.status === 401) {
+//           errorMessage = "❌ Authentication required. Please log in.";
+//           toast.error(errorMessage);
+//         } else if (err.response.status === 403) {
+//           errorMessage = "❌ You don't have permission to add products.";
+//           toast.error(errorMessage);
+//         } else if (err.response.status === 404) {
+//           errorMessage = "❌ API endpoint not found.";
+//           toast.error(errorMessage);
+//         } else if (err.response.status === 500) {
+//           errorMessage = "❌ Server error. Please try again later.";
+//           toast.error(errorMessage);
+//         } else {
+//           errorMessage = `❌ Server Error (${err.response.status})`;
+//           toast.error(errorMessage);
+//         }
+//       } else if (err.request) {
+//         errorMessage =
+//           "❌ Cannot connect to server. Please check:\n• Django server is running\n• CORS is enabled";
+//         toast.error("❌ Connection error — check your backend server");
+//       } else {
+//         errorMessage = `❌ Error: ${err.message}`;
+//         toast.error(errorMessage);
+//       }
+
+//       setError(errorMessage);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // ✅ NEW: Delete product function
+//   const handleDelete = async () => {
+//     if (!formData.name.trim()) {
+//       toast.error("❌ Please enter a product name to delete");
+//       return;
+//     }
+
+//     if (!window.confirm(`Are you sure you want to delete the product "${formData.name}"?`)) {
+//       return;
+//     }
+
+//     setLoading(true);
+//     setError("");
+//     setSuccess("");
+
+//     try {
+//       const token = localStorage.getItem("token");
+//       const productName = formData.name.trim();
+
+//       // First, try to find the product by name
+//       const searchResponse = await axios.get(
+//         `http://127.0.0.1:8000/api/products/?search=${encodeURIComponent(productName)}`,
+//         {
+//           headers: {
+//             Authorization: `Token ${token}`,
+//           },
+//         }
+//       );
+
+//       if (searchResponse.data.results && searchResponse.data.results.length > 0) {
+//         const product = searchResponse.data.results.find(
+//           p => p.name.toLowerCase() === productName.toLowerCase()
+//         );
+
+//         if (product) {
+//           // Delete the product by ID
+//           await axios.delete(
+//             `http://127.0.0.1:8000/api/products/${product.id}/`,
+//             {
+//               headers: {
+//                 Authorization: `Token ${token}`,
+//               },
+//             }
+//           );
+
+//           setSuccess(`✅ Product "${formData.name}" has been deleted successfully!`);
+//           toast.success(`✅ Product "${formData.name}" has been deleted successfully!`);
+
+//           // Clear the form
+//           setFormData({
+//             name: "",
+//             description: "",
+//             price: "",
+//             selling_price: "",
+//             quantity: "",
+//             category: "ELECTRONICS",
+//           });
+
+//           setTimeout(() => {
+//             setIsModalOpen(false);
+//             navigate("/products/all");
+//           }, 1000);
+//         } else {
+//           throw new Error("Product not found");
+//         }
+//       } else {
+//         throw new Error("Product not found");
+//       }
+//     } catch (err) {
+//       console.error("Error deleting product:", err);
+
+//       let errorMessage = "";
+
+//       if (err.response) {
+//         if (err.response.status === 404) {
+//           errorMessage = `❌ Product "${formData.name}" not found`;
+//           toast.error(errorMessage);
+//         } else if (err.response.status === 401) {
+//           errorMessage = "❌ Authentication required. Please log in.";
+//           toast.error(errorMessage);
+//         } else if (err.response.status === 403) {
+//           errorMessage = "❌ You don't have permission to delete products.";
+//           toast.error(errorMessage);
+//         } else {
+//           errorMessage = `❌ Error deleting product: ${err.response.status}`;
+//           toast.error(errorMessage);
+//         }
+//       } else if (err.message === "Product not found") {
+//         errorMessage = `❌ Product "${formData.name}" not found`;
+//         toast.error(errorMessage);
+//       } else {
+//         errorMessage = "❌ Cannot connect to server. Please try again.";
+//         toast.error(errorMessage);
+//       }
+
+//       setError(errorMessage);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleCancel = () => {
+//     setFormData({
+//       name: "",
+//       description: "",
+//       price: "",
+//       selling_price: "",
+//       quantity: "",
+//       category: "ELECTRONICS",
+//     });
+//     setError("");
+//     setSuccess("");
+//     setIsModalOpen(false);
+//     toast.info("Form cleared");
+//     navigate("/products/all");
+//   };
+
+//   const handleClose = () => {
+//     setError("");
+//     setSuccess("");
+//     setIsModalOpen(false);
+//     toast.info("Form closed");
+//     navigate("/products/all");
+//   };
+
+//   return isModalOpen ? (
+//     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+//       <div className="bg-white w-full max-w-2xl p-6 rounded-lg shadow-lg">
+//         <ToastContainer position="top-right" autoClose={3000} />
+
+//         {/* Header */}
+//         <div className="text-center mb-4">
+//           <h2 className="text-xl font-bold text-gray-800">Add New Product</h2>
+//         </div>
+
+//         {/* Status Messages */}
+//         {error && (
+//           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+//             <div className="flex items-start">
+//               <span className="text-red-500 mr-2 mt-0.5">⚠️</span>
+//               <div>
+//                 <span className="text-red-700 text-sm font-medium block mb-1">
+//                   {error.includes("Validation") ? "Validation Error" : "Error"}
+//                 </span>
+//                 <pre className="text-red-600 text-xs whitespace-pre-wrap">
+//                   {error}
+//                 </pre>
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//         {success && (
+//           <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+//             <div className="flex items-center">
+//               <span className="text-green-500 mr-2">✅</span>
+//               <span className="text-green-700 text-sm">{success}</span>
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Form */}
+//         <form
+//           onSubmit={handleSubmit}
+//           className="grid grid-cols-1 md:grid-cols-2 gap-4"
+//         >
+//           {/* Product Name */}
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700 mb-1">
+//               Product Name *
+//             </label>
+//             <input
+//               type="text"
+//               name="name"
+//               value={formData.name}
+//               onChange={handleChange}
+//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+//               placeholder="Product name"
+//               required
+//             />
+//           </div>
+
+//           {/* Cost Price */}
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700 mb-1">
+//               Cost Price (₦) *
+//             </label>
+//             <input
+//               type="number"
+//               name="price"
+//               value={formData.price}
+//               onChange={handleChange}
+//               min="0"
+//               step="0.01"
+//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+//               placeholder="0.00"
+//               required
+//             />
+//           </div>
+
+//           {/* Selling Price */}
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700 mb-1">
+//               Selling Price (₦) *
+//             </label>
+//             <input
+//               type="number"
+//               name="selling_price"
+//               value={formData.selling_price}
+//               onChange={handleChange}
+//               min="0"
+//               step="0.01"
+//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+//               placeholder="0.00"
+//               required
+//             />
+//           </div>
+
+//           {/* Quantity */}
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700 mb-1">
+//               Quantity *
+//             </label>
+//             <input
+//               type="number"
+//               name="quantity"
+//               value={formData.quantity}
+//               onChange={handleChange}
+//               min="0"
+//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+//               placeholder="0"
+//               required
+//             />
+//           </div>
+
+//           {/* Category */}
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700 mb-1">
+//               Category *
+//             </label>
+//             <select
+//               name="category"
+//               value={formData.category}
+//               onChange={handleChange}
+//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+//               required
+//             >
+//               <option value="ELECTRONICS">Electronics</option>
+//               <option value="FRUIT">Fruit</option>
+//               <option value="DRINKS">Drinks</option>
+//               <option value="GRAIN">Grain</option>
+//               <option value="FOOD">Food</option>
+//             </select>
+//           </div>
+
+//           {/* Description */}
+//           <div className="md:col-span-2">
+//             <label className="block text-sm font-medium text-gray-700 mb-1">
+//               Description *
+//             </label>
+//             <input type="text"
+//               name="description"
+//               value={formData.description}
+//               onChange={handleChange}
+        
+//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+//               placeholder="Product description"
+//               required
+//             />
+//           </div>
+
+//           {/* Buttons */}
+//           <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 mt-4">
+//             <button
+//               type="submit"
+//               disabled={loading}
+//               className="flex-1 bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center"
+//             >
+//               {loading ? (
+//                 <>
+//                   <svg
+//                     className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+//                     xmlns="http://www.w3.org/2000/svg"
+//                     fill="none"
+//                     viewBox="0 0 24 24"
+//                   >
+//                     <circle
+//                       className="opacity-25"
+//                       cx="12"
+//                       cy="12"
+//                       r="10"
+//                       stroke="currentColor"
+//                       strokeWidth="4"
+//                     ></circle>
+//                     <path
+//                       className="opacity-75"
+//                       fill="currentColor"
+//                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+//                     ></path>
+//                   </svg>
+//                   Adding...
+//                 </>
+//               ) : (
+//                 "Add Product"
+//               )}
+//             </button>
+
+//             {/* ✅ NEW: Delete Button */}
+//             {/* <button
+//               type="button"
+//               onClick={handleDelete}
+//               disabled={loading || !formData.name.trim()}
+//               className="flex-1 bg-red-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center"
+//             >
+//               🗑️ Delete Product
+//             </button> */}
+
+//             <button
+//               type="button"
+//               onClick={handleCancel}
+//               className="flex-1 bg-gray-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors text-sm"
+//             >
+//               Clear Form
+//             </button>
+
+//             <button
+//               type="button"
+//               onClick={handleClose}
+//               className="flex-1 bg-red-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm"
+//             >
+//               Close
+//             </button>
+//           </div>
+//         </form>
+//       </div>
+//     </div>
+//   ) : null;
+// };
+
+// export default AddProduct;
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -14,17 +486,31 @@ const AddProduct = () => {
     selling_price: "",
     quantity: "",
     category: "ELECTRONICS",
+    expiry_date: "",
+    manufacturing_date: "",
+    batch_number: "",
+    supplier: "",
+    min_stock_level: "",
+    max_stock_level: "",
+    barcode: "",
+    location: "",
+    weight: "",
+    dimensions: "",
+    is_perishable: false,
+    reorder_point: ""
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(true);
+  const [activeSection, setActiveSection] = useState("basic"); // ✅ NEW: Section state
 
   const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: type === "checkbox" ? checked : value,
     });
   };
 
@@ -34,10 +520,35 @@ const AddProduct = () => {
     setError("");
     setSuccess("");
 
+    // Validation for dates
+    if (formData.expiry_date && formData.manufacturing_date) {
+      const manufacturingDate = new Date(formData.manufacturing_date);
+      const expiryDate = new Date(formData.expiry_date);
+
+      if (expiryDate <= manufacturingDate) {
+        setError("❌ Expiry date must be after manufacturing date");
+        toast.error("❌ Expiry date must be after manufacturing date");
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Validation for stock levels
+    if (formData.min_stock_level && formData.max_stock_level) {
+      const minStock = parseInt(formData.min_stock_level);
+      const maxStock = parseInt(formData.max_stock_level);
+
+      if (minStock >= maxStock) {
+        setError("❌ Maximum stock level must be greater than minimum stock level");
+        toast.error("❌ Maximum stock level must be greater than minimum stock level");
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const token = localStorage.getItem("token");
       console.log("Sending product data:", formData);
-      console.log("Token exists:", !!token);
 
       const response = await axios.post(
         "http://127.0.0.1:8000/api/products/",
@@ -55,6 +566,7 @@ const AddProduct = () => {
       setSuccess("✅ Product has been added successfully!");
       toast.success("✅ Product has been added successfully!");
 
+      // Reset form
       setFormData({
         name: "",
         description: "",
@@ -62,6 +574,18 @@ const AddProduct = () => {
         selling_price: "",
         quantity: "",
         category: "ELECTRONICS",
+        expiry_date: "",
+        manufacturing_date: "",
+        batch_number: "",
+        supplier: "",
+        min_stock_level: "",
+        max_stock_level: "",
+        barcode: "",
+        location: "",
+        weight: "",
+        dimensions: "",
+        is_perishable: false,
+        reorder_point: ""
       });
 
       setTimeout(() => {
@@ -70,16 +594,12 @@ const AddProduct = () => {
       }, 1000);
     } catch (err) {
       console.error("Error adding product:", err);
-      console.error("Full error object:", err);
-      console.error("Error response data:", err.response?.data);
-      console.error("Error response status:", err.response?.status);
 
       let errorMessage = "";
 
       if (err.response) {
         if (err.response.status === 400) {
           const errors = err.response.data;
-          console.log("Validation errors:", errors);
           errorMessage = "Please verify your input:\n";
 
           if (typeof errors === "object") {
@@ -105,9 +625,6 @@ const AddProduct = () => {
         } else if (err.response.status === 403) {
           errorMessage = "❌ You don't have permission to add products.";
           toast.error(errorMessage);
-        } else if (err.response.status === 404) {
-          errorMessage = "❌ API endpoint not found.";
-          toast.error(errorMessage);
         } else if (err.response.status === 500) {
           errorMessage = "❌ Server error. Please try again later.";
           toast.error(errorMessage);
@@ -116,8 +633,7 @@ const AddProduct = () => {
           toast.error(errorMessage);
         }
       } else if (err.request) {
-        errorMessage =
-          "❌ Cannot connect to server. Please check:\n• Django server is running\n• CORS is enabled";
+        errorMessage = "❌ Cannot connect to server. Please check your backend server";
         toast.error("❌ Connection error — check your backend server");
       } else {
         errorMessage = `❌ Error: ${err.message}`;
@@ -130,105 +646,14 @@ const AddProduct = () => {
     }
   };
 
-  // ✅ NEW: Delete product function
-  const handleDelete = async () => {
-    if (!formData.name.trim()) {
-      toast.error("❌ Please enter a product name to delete");
-      return;
+  // Calculate suggested reorder point
+  const calculateReorderPoint = () => {
+    if (formData.min_stock_level && formData.quantity) {
+      const minStock = parseInt(formData.min_stock_level);
+      const currentQuantity = parseInt(formData.quantity);
+      return Math.max(minStock + 5, Math.floor(currentQuantity * 0.3));
     }
-
-    if (!window.confirm(`Are you sure you want to delete the product "${formData.name}"?`)) {
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const token = localStorage.getItem("token");
-      const productName = formData.name.trim();
-
-      // First, try to find the product by name
-      const searchResponse = await axios.get(
-        `http://127.0.0.1:8000/api/products/?search=${encodeURIComponent(productName)}`,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        }
-      );
-
-      if (searchResponse.data.results && searchResponse.data.results.length > 0) {
-        const product = searchResponse.data.results.find(
-          p => p.name.toLowerCase() === productName.toLowerCase()
-        );
-
-        if (product) {
-          // Delete the product by ID
-          await axios.delete(
-            `http://127.0.0.1:8000/api/products/${product.id}/`,
-            {
-              headers: {
-                Authorization: `Token ${token}`,
-              },
-            }
-          );
-
-          setSuccess(`✅ Product "${formData.name}" has been deleted successfully!`);
-          toast.success(`✅ Product "${formData.name}" has been deleted successfully!`);
-
-          // Clear the form
-          setFormData({
-            name: "",
-            description: "",
-            price: "",
-            selling_price: "",
-            quantity: "",
-            category: "ELECTRONICS",
-          });
-
-          setTimeout(() => {
-            setIsModalOpen(false);
-            navigate("/products/all");
-          }, 1000);
-        } else {
-          throw new Error("Product not found");
-        }
-      } else {
-        throw new Error("Product not found");
-      }
-    } catch (err) {
-      console.error("Error deleting product:", err);
-
-      let errorMessage = "";
-
-      if (err.response) {
-        if (err.response.status === 404) {
-          errorMessage = `❌ Product "${formData.name}" not found`;
-          toast.error(errorMessage);
-        } else if (err.response.status === 401) {
-          errorMessage = "❌ Authentication required. Please log in.";
-          toast.error(errorMessage);
-        } else if (err.response.status === 403) {
-          errorMessage = "❌ You don't have permission to delete products.";
-          toast.error(errorMessage);
-        } else {
-          errorMessage = `❌ Error deleting product: ${err.response.status}`;
-          toast.error(errorMessage);
-        }
-      } else if (err.message === "Product not found") {
-        errorMessage = `❌ Product "${formData.name}" not found`;
-        toast.error(errorMessage);
-      } else {
-        errorMessage = "❌ Cannot connect to server. Please try again.";
-        toast.error(errorMessage);
-      }
-
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+    return "";
   };
 
   const handleCancel = () => {
@@ -239,6 +664,18 @@ const AddProduct = () => {
       selling_price: "",
       quantity: "",
       category: "ELECTRONICS",
+      expiry_date: "",
+      manufacturing_date: "",
+      batch_number: "",
+      supplier: "",
+      min_stock_level: "",
+      max_stock_level: "",
+      barcode: "",
+      location: "",
+      weight: "",
+      dimensions: "",
+      is_perishable: false,
+      reorder_point: ""
     });
     setError("");
     setSuccess("");
@@ -255,14 +692,41 @@ const AddProduct = () => {
     navigate("/products/all");
   };
 
+  // ✅ UPDATED: Removed "Additional" section
+  const sections = [
+    { id: "basic", name: "Basic Info", icon: "📝" },
+    { id: "pricing", name: "Pricing", icon: "💰" },
+    { id: "inventory", name: "Inventory", icon: "📦" }
+  ];
+
   return isModalOpen ? (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white w-full max-w-2xl p-6 rounded-lg shadow-lg">
+      {/* ✅ REDUCED WIDTH: Changed from max-w-4xl to max-w-2xl */}
+      <div className="bg-white w-full max-w-2xl p-6 rounded-lg shadow-lg max-h-[90vh] overflow-y-auto">
         <ToastContainer position="top-right" autoClose={3000} />
 
         {/* Header */}
         <div className="text-center mb-4">
           <h2 className="text-xl font-bold text-gray-800">Add New Product</h2>
+          <p className="text-sm text-gray-600 mt-1">Complete inventory information</p>
+        </div>
+
+        {/* ✅ UPDATED: Section Navigation - Removed Additional tab */}
+        <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+          {sections.map((section) => (
+            <button
+              key={section.id}
+              type="button"
+              onClick={() => setActiveSection(section.id)}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${activeSection === section.id
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+                }`}
+            >
+              <span className="mr-1">{section.icon}</span>
+              {section.name}
+            </button>
+          ))}
         </div>
 
         {/* Status Messages */}
@@ -291,117 +755,313 @@ const AddProduct = () => {
         )}
 
         {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        >
-          {/* Product Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Product Name *
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="Product name"
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Cost Price */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Cost Price (₦) *
-            </label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              min="0"
-              step="0.01"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="0.00"
-              required
-            />
-          </div>
+          {/* Basic Information Section */}
+          {activeSection === "basic" && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Basic Information</h3>
 
-          {/* Selling Price */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Selling Price (₦) *
-            </label>
-            <input
-              type="number"
-              name="selling_price"
-              value={formData.selling_price}
-              onChange={handleChange}
-              min="0"
-              step="0.01"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="0.00"
-              required
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Product Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="Product name"
+                  required
+                />
+              </div>
 
-          {/* Quantity */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Quantity *
-            </label>
-            <input
-              type="number"
-              name="quantity"
-              value={formData.quantity}
-              onChange={handleChange}
-              min="0"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="0"
-              required
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Category *
+                </label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+                  required
+                >
+                  <option value="ELECTRONICS">Electronics</option>
+                  <option value="FRUIT">Fruit</option>
+                  <option value="DRINKS">Drinks</option>
+                  <option value="GRAIN">Grain</option>
+                  <option value="FOOD">Food</option>
+                  <option value="MEDICINE">Medicine</option>
+                  <option value="COSMETICS">Cosmetics</option>
+                  <option value="STATIONERY">Stationery</option>
+                </select>
+              </div>
 
-          {/* Category */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category *
-            </label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
-              required
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description *
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows="2"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="Product description"
+                  required
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Pricing Section */}
+          {activeSection === "pricing" && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Pricing</h3>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Cost Price (₦) *
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Selling Price (₦) *
+                </label>
+                <input
+                  type="number"
+                  name="selling_price"
+                  value={formData.selling_price}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Inventory Management Section */}
+          {activeSection === "inventory" && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Inventory Management</h3>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Current Quantity *
+                </label>
+                <input
+                  type="number"
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={handleChange}
+                  min="0"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="0"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Batch Number
+                  </label>
+                  <input
+                    type="text"
+                    name="batch_number"
+                    value={formData.batch_number}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="BATCH-001"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Barcode/SKU
+                  </label>
+                  <input
+                    type="text"
+                    name="barcode"
+                    value={formData.barcode}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="123456789012"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Supplier
+                </label>
+                <input
+                  type="text"
+                  name="supplier"
+                  value={formData.supplier}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="Supplier name"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Min Stock Level
+                  </label>
+                  <input
+                    type="number"
+                    name="min_stock_level"
+                    value={formData.min_stock_level}
+                    onChange={handleChange}
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="10"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Max Stock Level
+                  </label>
+                  <input
+                    type="number"
+                    name="max_stock_level"
+                    value={formData.max_stock_level}
+                    onChange={handleChange}
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="100"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Manufacturing Date
+                  </label>
+                  <input
+                    type="date"
+                    name="manufacturing_date"
+                    value={formData.manufacturing_date}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Expiry Date
+                  </label>
+                  <input
+                    type="date"
+                    name="expiry_date"
+                    value={formData.expiry_date}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* ✅ MOVED: Important fields from Additional section to Inventory */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Storage Location
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="Aisle 1, Shelf B"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Reorder Point
+                  </label>
+                  <input
+                    type="number"
+                    name="reorder_point"
+                    value={formData.reorder_point || calculateReorderPoint()}
+                    onChange={handleChange}
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="Auto-calculated"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="is_perishable"
+                  checked={formData.is_perishable}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label className="ml-2 block text-sm text-gray-700">
+                  This product is perishable
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between pt-4">
+            <button
+              type="button"
+              onClick={() => {
+                const currentIndex = sections.findIndex(s => s.id === activeSection);
+                if (currentIndex > 0) {
+                  setActiveSection(sections[currentIndex - 1].id);
+                }
+              }}
+              disabled={activeSection === "basic"}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <option value="ELECTRONICS">Electronics</option>
-              <option value="FRUIT">Fruit</option>
-              <option value="DRINKS">Drinks</option>
-              <option value="GRAIN">Grain</option>
-              <option value="FOOD">Food</option>
-            </select>
+              ← Previous
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const currentIndex = sections.findIndex(s => s.id === activeSection);
+                if (currentIndex < sections.length - 1) {
+                  setActiveSection(sections[currentIndex + 1].id);
+                }
+              }}
+              disabled={activeSection === "inventory"}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next →
+            </button>
           </div>
 
-          {/* Description */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description *
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="Product description"
-              required
-            ></textarea>
-          </div>
-
-          {/* Buttons */}
-          <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 mt-4">
+          {/* Submit & Action Buttons - Always Visible */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t">
             <button
               type="submit"
               disabled={loading}
@@ -436,22 +1096,12 @@ const AddProduct = () => {
               )}
             </button>
 
-            {/* ✅ NEW: Delete Button */}
-            {/* <button
-              type="button"
-              onClick={handleDelete}
-              disabled={loading || !formData.name.trim()}
-              className="flex-1 bg-red-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center"
-            >
-              🗑️ Delete Product
-            </button> */}
-
             <button
               type="button"
               onClick={handleCancel}
               className="flex-1 bg-gray-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors text-sm"
             >
-              Clear Form
+              Clear
             </button>
 
             <button

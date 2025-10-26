@@ -10,6 +10,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),  
     path("api/sales/", include("sales.urls")),
     path("reports/", include("customerreport.urls")),
+    path("api/", include("supplier.urls")),
     
 ]
 if settings.DEBUG:
