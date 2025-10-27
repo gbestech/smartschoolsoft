@@ -191,61 +191,85 @@ const AllProducts = () => {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {/* First Row */}
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                    <div className="flex items-center">
+                    <div className="flex items-start">
                         <div className="text-2xl mr-4">📦</div>
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-500">Total Products</h3>
-                            <p className="text-2xl font-bold text-gray-800">{filteredProducts.length}</p>
+                        <div className="flex-1">
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Total Products</h3>
+                            <p className="text-2xl font-bold text-gray-800 mb-2">{filteredProducts.length}</p>
+                            <p className="text-xs text-gray-500">All products in your inventory</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                    <div className="flex items-center">
+                    <div className="flex items-start">
                         <div className="text-2xl mr-4">💰</div>
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-500">Total Value</h3>
-                            <p className="text-2xl font-bold text-gray-800">
+                        <div className="flex-1">
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Total Inventory Value</h3>
+                            <p className="text-2xl font-bold text-gray-800 mb-2">
                                 ₦{filteredProducts.reduce((sum, product) => sum + (parseFloat(product.selling_price) * product.quantity), 0).toLocaleString()}
                             </p>
+                            <p className="text-xs text-gray-500">Based on current selling prices</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                    <div className="flex items-center">
+                    <div className="flex items-start">
                         <div className="text-2xl mr-4">💵</div>
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-500">Total Profit</h3>
-                            <p className="text-2xl font-bold text-green-600">
+                        <div className="flex-1">
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Total Potential Profit</h3>
+                            <p className="text-2xl font-bold text-green-600 mb-2">
                                 ₦{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
+                            <p className="text-xs text-gray-500">If all inventory is sold</p>
                         </div>
                     </div>
                 </div>
 
+                {/* Second Row */}
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                    <div className="flex items-center">
+                    <div className="flex items-start">
                         <div className="text-2xl mr-4">📊</div>
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-500">Avg Margin</h3>
-                            <p className="text-2xl font-bold text-blue-600">
+                        <div className="flex-1">
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Average Profit Margin</h3>
+                            <p className="text-2xl font-bold text-blue-600 mb-2">
                                 {averageProfitMargin.toFixed(1)}%
                             </p>
+                            <p className="text-xs text-gray-500">Across all products</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                    <div className="flex items-center">
+                    <div className="flex items-start">
                         <div className="text-2xl mr-4">⚠️</div>
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-500">Low Stock</h3>
-                            <p className="text-2xl font-bold text-orange-600">
+                        <div className="flex-1">
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Low Stock Items</h3>
+                            <p className="text-2xl font-bold text-orange-600 mb-2">
                                 {filteredProducts.filter(product => product.quantity < 10).length}
                             </p>
+                            <p className="text-xs text-gray-500">Products with less than 10 units</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Optional: Add a sixth card if needed, or leave this space empty for balance */}
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                    <div className="flex items-start">
+                        <div className="text-2xl mr-4">📈</div>
+                        <div className="flex-1">
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Stock Value Ratio</h3>
+                            <p className="text-2xl font-bold text-purple-600 mb-2">
+                                {filteredProducts.length > 0 ?
+                                    (filteredProducts.reduce((sum, product) => sum + (parseFloat(product.selling_price) * product.quantity), 0) / filteredProducts.length).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+                                    : 0
+                                }
+                            </p>
+                            <p className="text-xs text-gray-500">Average value per product</p>
                         </div>
                     </div>
                 </div>
@@ -383,18 +407,19 @@ const AllProducts = () => {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     Quantity
                                 </th>
-                                {/* <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     Profit
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     Actions
-                                </th> */}
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {currentProducts.map((product) => {
                                 const profitPerItem = parseFloat(product.selling_price) - parseFloat(product.price);
                                 const totalProductProfit = profitPerItem * product.quantity;
+                                const stockValue = parseFloat(product.selling_price) * product.quantity; // Individual product value
 
                                 return (
                                     <tr key={product.id} className="hover:bg-gray-50 transition-colors">
@@ -435,39 +460,33 @@ const AllProducts = () => {
                                                 {product.quantity} units
                                             </span>
                                         </td>
-                                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                            <div className="text-green-600 font-medium">
-                                                ₦{totalProductProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        {/* Individual Product Value */}
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            <div className="flex items-center">
+                                                <div className="text-2xl mr-3">💰</div>
+                                                <div>
+                                                    <div className="text-sm font-medium text-gray-500">Stock Value</div>
+                                                    <div className="text-lg font-bold text-gray-800">
+                                                        ₦{stockValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="text-gray-500 text-xs">
-                                                {parseFloat(product.profit_margin).toFixed(1)}% margin
+                                        </td>
+                                        {/* Individual Product Profit */}
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div className="flex items-center">
+                                                <div className="text-2xl mr-3">💵</div>
+                                                <div>
+                                                    <div className="text-sm font-medium text-gray-500">Potential Profit</div>
+                                                    <div className="text-lg font-bold text-green-600">
+                                                        ₦{totalProductProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        ₦{profitPerItem.toFixed(2)} per item
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="text-gray-400 text-xs">
-                                                ₦{profitPerItem.toFixed(2)} per item
-                                            </div>
-                                        </td> */}
-                                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div className="flex space-x-2">
-                                                <button
-                                                    onClick={() => handleEdit(product)}
-                                                    className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded transition-colors text-xs"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleStock(product)}
-                                                    className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded transition-colors text-xs"
-                                                >
-                                                    Stock
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(product.id)}
-                                                    className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition-colors text-xs"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </td> */}
+                                        </td>
                                     </tr>
                                 );
                             })}

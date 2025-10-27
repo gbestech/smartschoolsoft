@@ -12,12 +12,28 @@ class Sale(models.Model):
         blank=True,
         null=True,
     )
+    PAYMENT_METHODS = [
+        ('cash', 'Cash'),
+        ('receipt_upload', 'Receipt Upload'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('pos', 'POS'),
+        ('other', 'Other'),
+    ]
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='cash')
     date = models.DateField(auto_now_add=True, blank=True, null=True)
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0, blank=True, null=True)
 
     # Payment fields
     amount_paid = models.DecimalField(max_digits=12, decimal_places=2, default=0, blank=True, null=True)
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, blank=True, null=True)
+    
+    # Add receipt field for file uploads
+    receipt = models.FileField(
+        upload_to='receipts/',
+        blank=True,
+        null=True,
+        help_text='Upload receipt file for receipt_upload payment method'
+    )
 
     def save(self, *args, **kwargs):
         # Avoid errors when sale has no items yet

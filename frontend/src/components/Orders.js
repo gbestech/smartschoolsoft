@@ -27,12 +27,16 @@ const Orders = () => {
 
     // Payment Info
     const [amountPaid, setAmountPaid] = useState("");
+    const [paymentMethod, setPaymentMethod] = useState("cash");
+    const [receiptFile, setReceiptFile] = useState(null);
+    const [receiptPreview, setReceiptPreview] = useState(null);
     const [page, setPage] = useState(1);
     const perPage = 10;
 
     const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
     const balance = amountPaid ? Math.max(total - Number(amountPaid), 0) : total;
     const totalInWords = total > 0 ? `${toWords(total)} Naira Only` : "";
+    const isOverpayment = Number(amountPaid) > total;
 
     // Create product map for easy lookup
     const productMap = {};
@@ -88,6 +92,41 @@ const Orders = () => {
         fetchProducts();
         fetchSales();
     }, []);
+
+    // Handle receipt file upload
+    const handleReceiptUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
+            if (!validTypes.includes(file.type)) {
+                toast.error('Please upload a valid image (JPEG, PNG, GIF) or PDF file');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('File size should be less than 5MB');
+                return;
+            }
+
+            setReceiptFile(file);
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    setReceiptPreview(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                setReceiptPreview(null);
+            }
+        }
+    };
+
+    // Remove receipt
+    const handleRemoveReceipt = () => {
+        setReceiptFile(null);
+        setReceiptPreview(null);
+    };
 
     // Add to cart
     const handleAdd = () => {
@@ -170,34 +209,111 @@ const Orders = () => {
         setShowModal(true);
     };
 
+    // Handle amount paid change with optimized validation
+    const [lastToastId, setLastToastId] = useState(null);
+
+    const handleAmountPaidChange = (e) => {
+        const value = e.target.value;
+        setAmountPaid(value);
+
+        const paidAmount = Number(value) || 0;
+
+        // Clear previous toast if exists
+        if (lastToastId) {
+            toast.dismiss(lastToastId);
+        }
+
+        // Show payment confirmation message when customer pays any amount
+        if (paidAmount > 0) {
+            const toastMessage = `💰 ${customerName || 'Customer'} paid ₦${paidAmount.toLocaleString()}`;
+            const newToastId = toast.success(toastMessage, {
+                position: "top-center",
+                autoClose: 3000,
+                toastId: `payment-${paidAmount}`
+            });
+            setLastToastId(newToastId);
+        }
+    };
+
     // Confirm sale
     const confirmSale = async () => {
         try {
+            // Validate required fields
+            if (!customerName.trim()) {
+                toast.error("Please enter customer name.");
+                return;
+            }
+            if (!phone.trim()) {
+                toast.error("Please enter phone number.");
+                return;
+            }
+            if (cart.length === 0) {
+                toast.error("Cart is empty!");
+                return;
+            }
+            if (paymentMethod === 'receipt_upload' && !receiptFile) {
+                toast.error("Please upload a receipt for receipt payment method.");
+                return;
+            }
+
+            // Check for overpayment
+            const actualAmountPaid = Number(amountPaid) || 0;
+            if (actualAmountPaid > total) {
+                toast.error(`❌ Cannot process sale! Amount paid (₦${actualAmountPaid.toLocaleString()}) exceeds total (₦${total.toLocaleString()})`);
+                return;
+            }
+
             const token = localStorage.getItem('token');
 
-            const saleData = {
-                customer_name: customerName,
-                address: address || "Not provided",
-                phone: phone,
-                gender: gender || "",
-                date: saleDate,
-                amount_paid: Number(amountPaid) || 0,
-                items: cart.map((item) => ({
-                    product: item.id,
-                    qty: item.qty,
-                    price: parseFloat(item.price),
-                })),
-            };
+            // Calculate the actual balance based on amount paid
+            const calculatedBalance = Math.max(total - actualAmountPaid, 0);
 
-            console.log("Submitting sale:", saleData);
+            // Show payment summary with customer confirmation
+            let paymentConfirmation = "";
+            if (actualAmountPaid === total) {
+                paymentConfirmation = `💵 Full payment of ₦${actualAmountPaid.toLocaleString()} received from ${customerName}!`;
+            } else if (actualAmountPaid > 0) {
+                paymentConfirmation = `💳 ${customerName} paid ₦${actualAmountPaid.toLocaleString()}. Balance: ₦${calculatedBalance.toLocaleString()}`;
+            } else {
+                paymentConfirmation = `⚠️ ${customerName} - No payment received. Recording as unpaid sale.`;
+            }
+
+            toast.info(paymentConfirmation, {
+                position: "top-center",
+                autoClose: 3000,
+            });
+
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append('customer_name', customerName);
+            formData.append('address', address || "Not provided");
+            formData.append('phone', phone);
+            formData.append('gender', gender || "");
+            formData.append('date', saleDate);
+            formData.append('amount_paid', actualAmountPaid);
+            formData.append('payment_method', paymentMethod);
+            formData.append('balance', calculatedBalance);
+            formData.append('total', total);
+
+            // Append receipt file if exists
+            if (receiptFile) {
+                formData.append('receipt', receiptFile);
+            }
+
+            // Append items individually
+            cart.forEach((item, index) => {
+                formData.append(`items[${index}]product`, item.id);
+                formData.append(`items[${index}]qty`, item.qty);
+                formData.append(`items[${index}]price`, parseFloat(item.price));
+            });
 
             const response = await axios.post(
                 "http://127.0.0.1:8000/api/sales/sales/",
-                saleData,
+                formData,
                 {
                     headers: {
                         'Authorization': `Token ${token}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'multipart/form-data'
                     }
                 }
             );
@@ -206,17 +322,31 @@ const Orders = () => {
 
             setShowModal(false);
 
-            toast.success("🎉 Sale recorded successfully!", {
+            // Show success message with customer payment details
+            let successMessage = "";
+            if (actualAmountPaid === total) {
+                successMessage = `🎉 Sale to ${customerName} completed! Full payment of ₦${actualAmountPaid.toLocaleString()} received.`;
+            } else if (actualAmountPaid > 0) {
+                successMessage = `🎉 Sale to ${customerName} recorded! Payment: ₦${actualAmountPaid.toLocaleString()}, Balance: ₦${calculatedBalance.toLocaleString()}`;
+            } else {
+                successMessage = `🎉 Sale to ${customerName} recorded as unpaid. Total: ₦${total.toLocaleString()}`;
+            }
+
+            toast.success(successMessage, {
                 position: "top-center",
-                autoClose: 2000,
+                autoClose: 4000,
             });
 
+            // Reset form
             setCart([]);
             setCustomerName("");
             setAddress("");
             setPhone("");
             setGender("");
             setAmountPaid("");
+            setPaymentMethod("cash");
+            setReceiptFile(null);
+            setReceiptPreview(null);
             setSaleDate(new Date().toISOString().slice(0, 10));
 
             await fetchSales();
@@ -224,10 +354,32 @@ const Orders = () => {
 
         } catch (err) {
             console.error("Sale creation error:", err);
-            const errorMessage = err.response?.data
-                ? JSON.stringify(err.response.data)
-                : err.message || 'Unknown error';
-            toast.error(`Failed to create sale: ${errorMessage}`);
+
+            if (err.response) {
+                console.error("Response data:", err.response.data);
+
+                let errorMessage = "Failed to create sale: ";
+                if (err.response.data) {
+                    if (typeof err.response.data === 'object') {
+                        if (err.response.data.non_field_errors) {
+                            errorMessage += err.response.data.non_field_errors.join(', ');
+                        } else {
+                            Object.keys(err.response.data).forEach(key => {
+                                errorMessage += `${key}: ${Array.isArray(err.response.data[key]) ? err.response.data[key].join(', ') : err.response.data[key]} `;
+                            });
+                        }
+                    } else {
+                        errorMessage += err.response.data;
+                    }
+                } else {
+                    errorMessage += err.message || 'Unknown error';
+                }
+                toast.error(`❌ ${errorMessage}`);
+            } else if (err.request) {
+                toast.error('❌ No response received from server');
+            } else {
+                toast.error(`❌ Error: ${err.message}`);
+            }
         }
     };
 
@@ -257,14 +409,19 @@ const Orders = () => {
                 }
             );
 
-            toast.success("💰 Balance updated successfully!");
+            // Show customer payment confirmation
+            toast.success(`💰 ${updateBalanceModal.customer_name} paid additional ₦${Number(newPayment).toLocaleString()}. New balance: ₦${updatedBalance.toLocaleString()}`, {
+                position: "top-center",
+                autoClose: 4000,
+            });
+
             setUpdateBalanceModal(null);
             setNewPayment("");
             await fetchSales();
 
         } catch (err) {
             console.error("Update balance error:", err);
-            toast.error(`Failed to update balance: ${err.response?.data?.detail || err.message}`);
+            toast.error(`❌ Failed to update balance: ${err.response?.data?.detail || err.message}`);
         }
     };
 
@@ -281,18 +438,16 @@ const Orders = () => {
             });
 
             toast.success("🗑️ Sale deleted successfully!");
-
             setSales(prevSales => prevSales.filter((s) => s.id !== id));
-
             await fetchSales();
 
         } catch (err) {
             console.error("Delete error:", err);
-            toast.error(`Failed to delete sale: ${err.response?.data?.detail || err.message}`);
+            toast.error(`❌ Failed to delete sale: ${err.response?.data?.detail || err.message}`);
         }
     };
 
-    // Print receipt - UPDATED to show product names
+    // Print receipt
     const handlePrint = (sale) => {
         const printWindow = window.open('', '', 'height=600,width=800');
 
@@ -417,6 +572,10 @@ const Orders = () => {
                             <div class="info-label">Gender</div>
                             <div class="info-value">${sale.gender || 'N/A'}</div>
                         </div>
+                        <div class="info-item">
+                            <div class="info-label">Payment Method</div>
+                            <div class="info-value">${sale.payment_method || 'Cash'}</div>
+                        </div>
                     </div>
 
                     ${sale.items && sale.items.length > 0 ? `
@@ -531,6 +690,7 @@ const Orders = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column - Customer Info and Cart */}
                 <div className="space-y-6">
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <h3 className="text-xl font-semibold text-gray-800 mb-4">Customer Information</h3>
@@ -637,7 +797,7 @@ const Orders = () => {
 
                             <div className="overflow-x-auto">
                                 <table className="w-full">
-                                    <thead className="bg-gray-50">
+                                    <thead className="bg-blue-500">
                                         <tr>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Product
@@ -720,6 +880,7 @@ const Orders = () => {
                     )}
                 </div>
 
+                {/* Right Column - Sales History */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-xl font-semibold text-gray-800">Sales History</h3>
@@ -859,6 +1020,7 @@ const Orders = () => {
                 </div>
             </div>
 
+            {/* Confirm Sale Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-lg w-full max-w-md">
@@ -884,49 +1046,153 @@ const Orders = () => {
                                     </span>
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Amount Paid
-                                </label>
-                                <input
-                                    type="number"
-                                    value={amountPaid}
-                                    onChange={(e) => setAmountPaid(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Enter amount paid"
-                                    min="0"
-                                    max={total}
-                                />
-                            </div>
-                            {amountPaid && (
-                                <div className={`border rounded-lg p-4 ${balance > 0 ? 'bg-orange-50 border-orange-200' : Number(amountPaid) > total ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
-                                    <div className="flex justify-between items-center">
-                                        <span className={`font-medium ${balance > 0 ? 'text-orange-800' : Number(amountPaid) > total ? 'text-red-800' : 'text-green-800'}`}>
-                                            {Number(amountPaid) > total ? 'Your Customer is maing Overpayment!' : balance > 0 ? 'Balance Due:' : 'Fully Paid!'}
-                                        </span>
-                                        <span className={`text-lg font-bold ${balance > 0 ? 'text-orange-800' : Number(amountPaid) > total ? 'text-red-800' : 'text-green-800'}`}>
-                                            {Number(amountPaid) > total ? `-₦${(Number(amountPaid) - total).toLocaleString()}` : `₦${Number(balance).toLocaleString()}`}
-                                        </span>
+
+                            {/* Payment Information - Three Lines */}
+                            <div className="grid grid-cols-3 gap-3">
+                                {/* Payment Method */}
+                                <div className="col-span-3 sm:col-span-1">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Payment Method *
+                                    </label>
+                                    <select
+                                        value={paymentMethod}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        required
+                                    >
+                                        <option value="cash">Cash</option>
+                                        <option value="receipt_upload">Receipt</option>
+                                        <option value="bank_transfer">Transfer</option>
+                                        <option value="pos">POS</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+
+                                {/* Amount Paid */}
+                                <div className="col-span-3 sm:col-span-1">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Amount Paid
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={amountPaid}
+                                        onChange={handleAmountPaidChange}
+                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Amount"
+                                        min="0"
+                                        max={total}
+                                    />
+                                </div>
+
+                                {/* Balance Display */}
+                                <div className="col-span-3 sm:col-span-1">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Balance
+                                    </label>
+                                    <div className={`w-full px-3 py-2 text-sm border rounded-lg font-semibold ${balance > 0
+                                        ? 'bg-orange-50 border-orange-200 text-orange-800'
+                                        : isOverpayment
+                                            ? 'bg-red-50 border-red-200 text-red-800'
+                                            : 'bg-green-50 border-green-200 text-green-800'
+                                        }`}>
+                                        {isOverpayment
+                                            ? `-₦${(Number(amountPaid) - total).toLocaleString()}`
+                                            : `₦${Number(balance).toLocaleString()}`
+                                        }
                                     </div>
-                                    {Number(amountPaid) > total && (
-                                        <p className="text-red-600 text-sm mt-2">
-                                            Amount paid cannot exceed total amount!
+                                </div>
+                            </div>
+
+                            {/* Overpayment Warning */}
+                            {isOverpayment && (
+                                <div className="col-span-3">
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                        <div className="flex items-center">
+                                            <span className="text-red-500 mr-2">⚠️</span>
+                                            <span className="text-red-700 text-sm font-medium">
+                                                Overpayment: ₦{(Number(amountPaid) - total).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <p className="text-red-600 text-xs mt-1">
+                                            Amount paid exceeds total amount. Please adjust the payment.
                                         </p>
-                                    )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Receipt Upload - Only show when payment method is receipt_upload */}
+                            {paymentMethod === 'receipt_upload' && (
+                                <div className="col-span-3">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Upload Receipt *
+                                    </label>
+                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center">
+                                        {!receiptFile ? (
+                                            <div>
+                                                <input
+                                                    type="file"
+                                                    accept=".jpg,.jpeg,.png,.gif,.pdf"
+                                                    onChange={handleReceiptUpload}
+                                                    className="hidden"
+                                                    id="receipt-upload"
+                                                />
+                                                <label
+                                                    htmlFor="receipt-upload"
+                                                    className="cursor-pointer bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-600 transition-colors inline-block text-sm"
+                                                >
+                                                    📎 Choose File
+                                                </label>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    JPG, PNG, GIF, PDF (Max 5MB)
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center space-x-2">
+                                                    {receiptPreview ? (
+                                                        <img
+                                                            src={receiptPreview}
+                                                            alt="Receipt preview"
+                                                            className="w-10 h-10 object-cover rounded"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">
+                                                            📄
+                                                        </div>
+                                                    )}
+                                                    <div className="text-left">
+                                                        <p className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
+                                                            {receiptFile.name}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">
+                                                            {(receiptFile.size / 1024 / 1024).toFixed(2)} MB
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleRemoveReceipt}
+                                                    className="text-red-500 hover:text-red-700 text-sm"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>
                         <div className="flex gap-3 p-6 border-t border-gray-200">
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="flex-1 bg-gray-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+                                className="flex-1 bg-gray-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-gray-600 transition-colors text-sm"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmSale}
-                                disabled={Number(amountPaid) > total}
-                                className="flex-1 bg-green-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
+                                disabled={isOverpayment || (paymentMethod === 'receipt_upload' && !receiptFile)}
+                                className="flex-1 bg-green-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400 text-sm"
                             >
                                 Confirm Sale
                             </button>
@@ -935,6 +1201,7 @@ const Orders = () => {
                 </div>
             )}
 
+            {/* Update Balance Modal */}
             {updateBalanceModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-lg w-full max-w-md">
@@ -1006,6 +1273,7 @@ const Orders = () => {
                 </div>
             )}
 
+            {/* View Sale Details Modal */}
             {viewModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-lg w-full max-w-md">
@@ -1030,6 +1298,25 @@ const Orders = () => {
                                     <span className="text-sm text-gray-600">Gender:</span>
                                     <p className="font-medium">{viewModal.gender || 'N/A'}</p>
                                 </div>
+                                <div>
+                                    <span className="text-sm text-gray-600">Payment Method:</span>
+                                    <p className="font-medium">{viewModal.payment_method || 'Cash'}</p>
+                                </div>
+                                {viewModal.receipt && (
+                                    <div className="md:col-span-2">
+                                        <span className="text-sm text-gray-600">Receipt:</span>
+                                        <div className="mt-1">
+                                            <a
+                                                href={viewModal.receipt}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:text-blue-800 underline flex items-center space-x-1"
+                                            >
+                                                <span>📎 View Uploaded Receipt</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             <div className="border-t pt-4">
                                 <div className="space-y-2">
@@ -1052,15 +1339,24 @@ const Orders = () => {
                             <div className="border-t pt-4">
                                 <h4 className="font-semibold mb-2">Items Sold:</h4>
                                 <div className="space-y-2 max-h-40 overflow-y-auto">
-                                    {viewModal.items.map((item, index) => (
-                                        <div key={index} className="flex justify-between text-sm">
-                                            <span>{getProductName(item.product)}</span>
-                                            <span>{item.qty} × ₦{Number(item.price).toLocaleString()}</span>
-                                        </div>
-                                    ))}
+                                    {viewModal.items && viewModal.items.length > 0 ? (
+                                        viewModal.items.map((item, index) => {
+                                            const productName = getProductName(item.product);
+                                            const quantity = item.qty || item.quantity || 1;
+                                            const price = item.price || item.unit_price || 0;
+
+                                            return (
+                                                <div key={index} className="flex justify-between text-sm">
+                                                    <span className="flex-1">{productName}</span>
+                                                    <span className="ml-2">{quantity} × ₦{Number(price).toLocaleString()}</span>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="text-gray-500 text-sm">No items found</p>
+                                    )}
                                 </div>
                             </div>
-
                         </div>
                         <div className="flex gap-3 p-6 border-t border-gray-200">
                             <button

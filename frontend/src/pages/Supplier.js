@@ -348,7 +348,7 @@ ${supplier.contact_person ? `👤 Contact: ${supplier.contact_person}` : ''}
             <ToastContainer position="top-right" autoClose={5000} />
 
             {/* Debug Header */}
-            <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            {/* <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <div className="flex justify-between items-center">
                     <div>
                         <h3 className="text-lg font-semibold text-yellow-800">Debug Mode</h3>
@@ -361,7 +361,7 @@ ${supplier.contact_person ? `👤 Contact: ${supplier.contact_person}` : ''}
                         Test Connection
                     </button>
                 </div>
-            </div>
+            </div> */}
 
             {/* Header */}
             <div className="mb-8">

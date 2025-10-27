@@ -8,7 +8,12 @@ from .serializers import CustomerReportSerializer
 from product.models import Product  # ✅ fixed the typo
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
-
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.db.models import Count
+from .models import CustomerReport
+from django.utils import timezone
+from datetime import timedelta
 
 # -------------------------------
 # Customer Report Views
@@ -59,12 +64,7 @@ def report_list(request):
         return Response({'error': str(e)}, status=500)
     
 # views.py
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from django.db.models import Count
-from .models import CustomerReport
-from django.utils import timezone
-from datetime import timedelta
+
 
 @api_view(['GET'])
 def report_count(request):
@@ -105,3 +105,6 @@ def report_count(request):
         return Response({
             'error': str(e)
         }, status=500)
+        
+        
+        

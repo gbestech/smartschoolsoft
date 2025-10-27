@@ -1,8 +1,14 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
+
+    const handleEditProfile = () => {
+        navigate('/edit-profile');
+    };
 
     return (
         <div className="p-6 w-full">
@@ -97,7 +103,10 @@ const Dashboard = () => {
                 <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
                     <h4 className="text-md font-semibold text-gray-800 mb-3">Quick Actions</h4>
                     <div className="space-y-2">
-                        <button className="w-full bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600 transition-colors text-xs font-medium">
+                        <button
+                            onClick={handleEditProfile}
+                            className="w-full bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600 transition-colors text-xs font-medium"
+                        >
                             Edit Profile
                         </button>
                         <button className="w-full bg-gray-500 text-white py-2 px-3 rounded-lg hover:bg-gray-600 transition-colors text-xs font-medium">
