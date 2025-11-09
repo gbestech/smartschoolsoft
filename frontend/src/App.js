@@ -39,6 +39,9 @@ import UserManagement from './pages/UserManagement';
 import HelpSupport from './pages/HelpSuppor';
 import Inventory from './Inventory';
 import Suppliers from './pages/Supplier';
+import EditProfile from './pages/EditProfile';
+import ReportsDashboard from './pages/Report';
+import StaffPage from './pages/StaffPage';
 
 
 function App() {
@@ -101,13 +104,13 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             } />
-            {/* <Route path="/products/inventory" element={
+            <Route path="/report" element={
               <ProtectedRoute>
                 <DashboardLayout>
-                  <Inventory />
+                  <ReportsDashboard />
                 </DashboardLayout>
               </ProtectedRoute>
-            } /> */}
+            } />
             <Route path="/products/add" element={
               <ProtectedRoute>
                 <DashboardLayout>
@@ -181,6 +184,13 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             } />
+            <Route path="/edit-profile" element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <EditProfile />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
             <Route path="/ViewCustomerReport" element={
               <ProtectedRoute>
                 <DashboardLayout>
@@ -236,10 +246,17 @@ function App() {
                 </DashboardLayout>
               </ProtectedRoute>
             } />
-            <Route path="/admin/products/inventory" element={
+            <Route path="/admin/products/all" element={
               <ProtectedRoute adminOnly={true}>
                 <DashboardLayout>
-                  <Inventory />
+                  <AllProducts />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/hr/add-staff" element={
+              <ProtectedRoute adminOnly={true}>
+                <DashboardLayout>
+                  <StaffPage />
                 </DashboardLayout>
               </ProtectedRoute>
             } />

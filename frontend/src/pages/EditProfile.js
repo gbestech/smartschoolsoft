@@ -84,6 +84,7 @@ const EditProfile = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('Form submission started...');
 
         if (!validateForm()) {
             toast.error('Please fix the errors in the form');
@@ -93,16 +94,68 @@ const EditProfile = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.put(
-                `http://127.0.0.1:8000/api/users/${user.id}/`,
-                formData,
-                {
-                    headers: {
-                        'Authorization': `Token ${token}`,
-                        'Content-Type': 'application/json'
+            console.log('Token:', token ? 'Present' : 'Missing');
+            console.log('Current User ID:', user?.id);
+            console.log('Form data to send:', formData);
+
+            // Try different API endpoints - focusing on current user endpoints
+            const endpoints = [
+                `http://127.0.0.1:8000/api/auth/user/`,  // Django REST Auth current user
+                `http://127.0.0.1:8000/api/users/me/`,   // Common current user endpoint
+                `http://127.0.0.1:8000/api/user/profile/`, // Custom profile endpoint
+                `http://127.0.0.1:8000/api/profile/`,     // Simple profile endpoint
+            ];
+
+            let response;
+            let lastError;
+
+            for (const endpoint of endpoints) {
+                try {
+                    console.log(`Trying endpoint: ${endpoint}`);
+                    
+                    // Try PUT first, then PATCH if PUT fails
+                    try {
+                        response = await axios.put(
+                            endpoint,
+                            formData,
+                            {
+                                headers: {
+                                    'Authorization': `Token ${token}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                timeout: 10000
+                            }
+                        );
+                        console.log('Success with PUT on endpoint:', endpoint);
+                    } catch (putError) {
+                        console.log(`PUT failed, trying PATCH on endpoint: ${endpoint}`);
+                        response = await axios.patch(
+                            endpoint,
+                            formData,
+                            {
+                                headers: {
+                                    'Authorization': `Token ${token}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                timeout: 10000
+                            }
+                        );
+                        console.log('Success with PATCH on endpoint:', endpoint);
                     }
+                    
+                    break; // Exit loop if successful
+                } catch (error) {
+                    lastError = error;
+                    console.log(`Failed with endpoint ${endpoint}:`, error.response?.status, error.message);
+                    continue; // Try next endpoint
                 }
-            );
+            }
+
+            if (!response) {
+                throw lastError || new Error('All endpoints failed');
+            }
+
+            console.log('Profile update response:', response.data);
 
             // Update user in context
             updateUser(response.data);
@@ -117,18 +170,98 @@ const EditProfile = () => {
 
         } catch (error) {
             console.error('Error updating profile:', error);
+            console.error('Error details:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
 
             if (error.response?.status === 400) {
                 const backendErrors = error.response.data;
+                console.log('Backend validation errors:', backendErrors);
                 setErrors(backendErrors);
-                toast.error('Please fix the validation errors');
+                
+                // Show specific error messages
+                if (backendErrors.username) {
+                    toast.error(`Username error: ${backendErrors.username}`);
+                } else if (backendErrors.email) {
+                    toast.error(`Email error: ${backendErrors.email}`);
+                } else {
+                    toast.error('Please fix the validation errors');
+                }
             } else if (error.response?.status === 401) {
                 toast.error('Session expired. Please login again.');
+                // Redirect to login
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000);
+            } else if (error.response?.status === 403) {
+                // Permission denied - try alternative approach
+                toast.error('Permission issue. Trying alternative method...');
+                await tryAlternativeUpdate();
+            } else if (error.response?.status === 404) {
+                toast.error('User not found. Please contact support.');
+            } else if (error.code === 'NETWORK_ERROR') {
+                toast.error('Network error. Please check your connection.');
             } else {
                 toast.error('Failed to update profile. Please try again.');
             }
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Alternative update method - try updating only specific fields
+    const tryAlternativeUpdate = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            console.log('Trying alternative update method...');
+
+            // Try with only basic fields that are less likely to have permission issues
+            const basicData = {
+                username: formData.username,
+                email: formData.email,
+                first_name: formData.first_name,
+                last_name: formData.last_name
+            };
+
+            const endpoints = [
+                `http://127.0.0.1:8000/api/auth/user/`,
+                `http://127.0.0.1:8000/api/users/me/`,
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    console.log(`Trying alternative update on: ${endpoint}`);
+                    const response = await axios.patch(
+                        endpoint,
+                        basicData,
+                        {
+                            headers: {
+                                'Authorization': `Token ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+
+                    console.log('Alternative update successful:', response.data);
+                    updateUser(response.data);
+                    toast.success('Basic profile information updated successfully!');
+                    setIsChanged(false);
+                    
+                    setTimeout(() => {
+                        navigate('/dashboard');
+                    }, 1500);
+                    return;
+                } catch (error) {
+                    console.log(`Alternative update failed on ${endpoint}:`, error.response?.status);
+                }
+            }
+
+            toast.error('Unable to update profile. Please contact administrator.');
+        } catch (error) {
+            console.error('Alternative update failed:', error);
+            toast.error('Profile update failed. Please contact support.');
         }
     };
 
@@ -140,6 +273,15 @@ const EditProfile = () => {
         } else {
             navigate('/dashboard');
         }
+    };
+
+    // Debug function to check current state
+    const debugState = () => {
+        console.log('Current form data:', formData);
+        console.log('Current user:', user);
+        console.log('Loading:', loading);
+        console.log('Errors:', errors);
+        console.log('Is changed:', isChanged);
     };
 
     if (!user) {
@@ -156,6 +298,15 @@ const EditProfile = () => {
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <ToastContainer position="top-right" autoClose={3000} />
+
+            {/* Debug button - remove in production */}
+            <button 
+                onClick={debugState}
+                className="fixed bottom-4 right-4 bg-gray-800 text-white p-2 rounded-lg text-xs opacity-50 hover:opacity-100"
+                style={{zIndex: 1000}}
+            >
+                Debug
+            </button>
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
@@ -186,6 +337,9 @@ const EditProfile = () => {
                                 </h2>
                                 <p className="text-gray-600 text-sm mt-1">
                                     Update your basic profile details
+                                </p>
+                                <p className="text-xs text-yellow-600 mt-2">
+                                    Note: Some fields might have restricted access based on your permissions.
                                 </p>
                             </div>
 

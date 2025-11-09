@@ -257,7 +257,7 @@ const CustomerReportForm = ({ onSuccess }) => {
                         {/* Accordion for Products */}
                         <div className="border rounded-lg shadow-sm overflow-hidden">
                             <button
-                                type="button"
+                                type="button" required ="required"
                                 onClick={() => setAccordionOpen(!accordionOpen)}
                                 className="w-full flex justify-between items-center px-3 py-2 bg-gray-100 hover:bg-gray-200 transition text-sm"
                             >

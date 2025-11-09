@@ -659,21 +659,21 @@ const UpdatePaymentModal = ({
                 </div>
                 {newPayment && (
                     <div className={`border rounded-lg p-4 ${Number(newPayment) > Number(debtor.balance)
-                            ? 'bg-red-50 border-red-200'
-                            : 'bg-green-50 border-green-200'
+                        ? 'bg-red-50 border-red-200'
+                        : 'bg-green-50 border-green-200'
                         }`}>
                         <div className="flex justify-between">
                             <span className={`font-medium ${Number(newPayment) > Number(debtor.balance)
-                                    ? 'text-red-800'
-                                    : 'text-green-800'
+                                ? 'text-red-800'
+                                : 'text-green-800'
                                 }`}>
                                 {Number(newPayment) > Number(debtor.balance)
                                     ? 'Payment Exceeds Balance!'
                                     : 'New Balance:'}
                             </span>
                             <span className={`font-bold ${Number(newPayment) > Number(debtor.balance)
-                                    ? 'text-red-800'
-                                    : 'text-green-800'
+                                ? 'text-red-800'
+                                : 'text-green-800'
                                 }`}>
                                 {Number(newPayment) > Number(debtor.balance)
                                     ? `Excess: ₦${(Number(newPayment) - Number(debtor.balance)).toLocaleString()}`
@@ -711,87 +711,64 @@ const UpdatePaymentModal = ({
     </div>
 );
 
+// Updated ViewDetailsModal - Reduced to 3 rows
 const ViewDetailsModal = ({ debtor, setViewModal, handlePrint }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl">
+        <div className="bg-white rounded-xl shadow-lg w-full max-w-md">
             <div className="p-6 border-b border-gray-200">
                 <h3 className="text-xl font-semibold text-gray-800">Sale Details</h3>
                 <p className="text-gray-600 mt-1">{debtor.customer_name}</p>
             </div>
-            <div className="p-6 space-y-6">
-                {/* Customer Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <span className="text-sm text-gray-600">Customer Name:</span>
+
+            {/* Three Rows Layout */}
+            <div className="p-6 space-y-4">
+                {/* Row 1: Customer Information */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                        <span className="text-sm text-gray-600">Customer Name</span>
                         <p className="font-medium">{debtor.customer_name}</p>
                     </div>
-                    <div>
-                        <span className="text-sm text-gray-600">Phone:</span>
+                    <div className="space-y-1">
+                        <span className="text-sm text-gray-600">Phone</span>
                         <p className="font-medium">{debtor.phone}</p>
                     </div>
-                    <div>
-                        <span className="text-sm text-gray-600">Sale Date:</span>
-                        <p className="font-medium">{new Date(debtor.date).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                        <span className="text-sm text-gray-600">Gender:</span>
-                        <p className="font-medium">{debtor.gender || 'N/A'}</p>
-                    </div>
-                    {debtor.address && (
-                        <div className="md:col-span-2">
-                            <span className="text-sm text-gray-600">Address:</span>
-                            <p className="font-medium">{debtor.address}</p>
-                        </div>
-                    )}
                 </div>
 
-                {/* Items Purchased */}
-                {debtor.items && debtor.items.length > 0 && (
-                    <div className="border-t pt-4">
-                        <h4 className="font-semibold mb-3">Items Purchased</h4>
-                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                            {debtor.items.map((item, index) => (
-                                <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <div>
-                                        <span className="font-medium">{item.product_name || `Product ${item.product}`}</span>
-                                        <span className="text-sm text-gray-500 ml-2">
-                                            {item.qty} × ₦{Number(item.price).toLocaleString()}
-                                        </span>
-                                    </div>
-                                    <span className="font-semibold">
-                                        ₦{Number(item.qty * item.price).toLocaleString()}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
+                {/* Row 2: Sale Information */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                        <span className="text-sm text-gray-600">Sale Date</span>
+                        <p className="font-medium">{new Date(debtor.date).toLocaleDateString()}</p>
                     </div>
-                )}
+                    <div className="space-y-1">
+                        <span className="text-sm text-gray-600">Gender</span>
+                        <p className="font-medium">{debtor.gender || 'N/A'}</p>
+                    </div>
+                </div>
 
-                {/* Payment Summary */}
-                <div className="border-t pt-4">
-                    <h4 className="font-semibold mb-3">Payment Summary</h4>
-                    <div className="space-y-2">
-                        <div className="flex justify-between">
-                            <span>Total Amount:</span>
-                            <span className="font-semibold">₦{Number(debtor.total).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Amount Paid:</span>
-                            <span className="text-green-600 font-semibold">₦{Number(debtor.amount_paid).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Outstanding Balance:</span>
-                            <span className="text-red-600 font-bold">₦{Number(debtor.balance).toLocaleString()}</span>
-                        </div>
+                {/* Row 3: Payment Summary */}
+                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    <div className="flex justify-between">
+                        <span className="text-gray-600">Total Amount:</span>
+                        <span className="font-semibold">₦{Number(debtor.total).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-gray-600">Amount Paid:</span>
+                        <span className="text-green-600 font-semibold">₦{Number(debtor.amount_paid).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-gray-600">Balance:</span>
+                        <span className="text-red-600 font-bold">₦{Number(debtor.balance).toLocaleString()}</span>
                     </div>
                 </div>
             </div>
+
             <div className="flex gap-3 p-6 border-t border-gray-200">
                 <button
                     onClick={() => handlePrint(debtor)}
                     className="flex-1 bg-blue-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors"
                 >
-                    🖨 Print Statement
+                    🖨 Print
                 </button>
                 <button
                     onClick={() => setViewModal(null)}

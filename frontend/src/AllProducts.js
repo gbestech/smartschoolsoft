@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from './context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const AllProducts = () => {
     const { user } = useAuth();
@@ -189,7 +189,9 @@ const AllProducts = () => {
                 <h1 className="text-3xl font-bold text-gray-800">All Products</h1>
                 <p className="text-gray-600 mt-2">Manage and view all products in the system</p>
             </div>
-
+            <div className="bg-blue-500 text-white mb-2 px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium inline-flex items-center justify-right">
+                <Link to='/admin/products/add'>Add Product</Link>
+            </div>
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {/* First Row */}

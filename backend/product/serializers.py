@@ -49,14 +49,6 @@ from .models import Product
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = [
-            'id', 'name', 'description', 'price', 'selling_price', 
-            'quantity', 'category', 
-            # ✅ NEW fields
-            'expiry_date', 'manufacturing_date', 'batch_number', 
-            'supplier', 'min_stock_level', 'max_stock_level', 
-            'barcode', 'location', 'weight', 'dimensions', 
-            'is_perishable', 'reorder_point',
-            'created_at', 'updated_at'
-        ]
+      
+        fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']

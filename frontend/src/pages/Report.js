@@ -1,465 +1,477 @@
-// import React, { useState, useEffect } from "react";
-// import { toast } from "react-toastify";
-// import axios from "axios";
-// const API_BASE = "http://localhost:8000";
-
-// const CustomerReportForm = ({ onSuccess }) => {
-//     const [formData, setFormData] = useState({
-//         customer_name: "",
-//         report_date: "",
-//         message: "",
-//         products: [],
-//     });
-//     const [isSubmitting, setIsSubmitting] = useState(false);
-//     const [products, setProducts] = useState([]);
-//     const [accordionOpen, setAccordionOpen] = useState(false);
-//     const [loadingProducts, setLoadingProducts] = useState(true);
-//     const [error, setError] = useState(null);
-
-//     // ✅ Fetch products from the backend
-//     useEffect(() => {
-//         const loadProducts = async () => {
-//             try {
-//                 setLoadingProducts(true);
-//                 const response = await fetch(`${API_BASE}/reports/products/`);
-//                 if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-//                 const data = await response.json();
-//                 setProducts(data);
-//             } catch (err) {
-//                 console.error("Error fetching products:", err);
-//                 setError("⚠️ Failed to load products");
-//                 toast.error("⚠️ Failed to load products");
-//             } finally {
-//                 setLoadingProducts(false);
-//             }
-//         };
-//         loadProducts();
-//     }, []);
-
-//     // ✅ Handle form field changes
-//     const handleChange = (e) => {
-//         const { name, value } = e.target;
-//         setFormData((prev) => ({
-//             ...prev,
-//             [name]: value,
-//         }));
-//     };
-
-//     // ✅ Toggle product checkbox
-//     const handleProductToggle = (productId) => {
-//         setFormData((prev) => {
-//             const alreadySelected = prev.products.includes(productId);
-//             return {
-//                 ...prev,
-//                 products: alreadySelected
-//                     ? prev.products.filter((id) => id !== productId)
-//                     : [...prev.products, productId],
-//             };
-//         });
-//     };
-
-//     // ✅ Submit form data with JWT Authorization header
-//     const handleSubmit = async (e) => {
-//         e.preventDefault();
-
-//         try {
-//             const response = await axios.post("http://localhost:8000/reports/api/reports/", formData);
-//             toast.success("Report submitted successfully!");
-//             console.log(response.data);
-//         } catch (error) {
-//             console.error("Error submitting report:", error);
-//             toast.error("Failed to submit report");
-//         }
-//     };
-
-
-//     const today = new Date().toISOString().split("T")[0];
-
-//     return (
-//         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
-//             <div className="max-w-md mx-auto">
-//                 <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
-//                     {/* Header */}
-//                     <div className="text-center mb-8">
-//                         <div className="mx-auto h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
-//                             <span className="text-2xl">📊</span>
-//                         </div>
-//                         <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Customer Report</h2>
-//                         <p className="text-gray-600 text-sm">
-//                             Fill in customer details and report information
-//                         </p>
-//                     </div>
-
-//                     {/* Form */}
-//                     <form onSubmit={handleSubmit} className="space-y-6">
-//                         {/* Customer Name */}
-//                         <div>
-//                             <label htmlFor="customer_name" className="block text-sm font-medium text-gray-700 mb-2">
-//                                 👤 Customer Name
-//                             </label>
-//                             <input
-//                                 type="text"
-//                                 id="customer_name"
-//                                 name="customer_name"
-//                                 value={formData.customer_name}
-//                                 onChange={handleChange}
-//                                 required
-//                                 placeholder="Enter customer full name"
-//                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-//                             />
-//                         </div>
-
-//                         {/* Report Date */}
-//                         <div>
-//                             <label htmlFor="report_date" className="block text-sm font-medium text-gray-700 mb-2">
-//                                 📅 Report Date
-//                             </label>
-//                             <input
-//                                 type="date"
-//                                 id="report_date"
-//                                 name="report_date"
-//                                 value={formData.report_date}
-//                                 onChange={handleChange}
-//                                 max={today}
-//                                 required
-//                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-//                             />
-//                         </div>
-
-//                         {/* Accordion for Products */}
-//                         <div className="border rounded-lg shadow-sm overflow-hidden">
-//                             <button
-//                                 type="button"
-//                                 onClick={() => setAccordionOpen(!accordionOpen)}
-//                                 className="w-full flex justify-between items-center px-4 py-3 bg-gray-100 hover:bg-gray-200 transition"
-//                             >
-//                                 <span className="font-medium text-gray-700">🛒 Select Products</span>
-//                                 <span>{accordionOpen ? "▲" : "▼"}</span>
-//                             </button>
-
-//                             {accordionOpen && (
-//                                 <div className="max-h-60 overflow-y-auto bg-white border-t">
-//                                     {loadingProducts ? (
-//                                         <p className="text-center py-3 text-gray-500 text-sm">Loading products...</p>
-//                                     ) : error ? (
-//                                         <p className="text-center py-3 text-red-500 text-sm">{error}</p>
-//                                     ) : products.length > 0 ? (
-//                                         products.map((product) => (
-//                                             <label
-//                                                 key={product.id}
-//                                                 className="flex items-center justify-between px-4 py-2 hover:bg-gray-50 cursor-pointer"
-//                                             >
-//                                                 <span className="text-gray-700 text-sm">{product.name}</span>
-//                                                 <input
-//                                                     type="checkbox"
-//                                                     checked={formData.products.includes(product.id)}
-//                                                     onChange={() => handleProductToggle(product.id)}
-//                                                     className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
-//                                                 />
-//                                             </label>
-//                                         ))
-//                                     ) : (
-//                                         <p className="text-gray-500 text-sm px-4 py-3">No products available.</p>
-//                                     )}
-//                                 </div>
-//                             )}
-//                         </div>
-
-//                         {/* Message */}
-//                         <div>
-//                             <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-//                                 💬 Report Message
-//                             </label>
-//                             <textarea
-//                                 id="message"
-//                                 name="message"
-//                                 value={formData.message}
-//                                 onChange={handleChange}
-//                                 required
-//                                 rows="4"
-//                                 placeholder="Describe the issue, feedback, or report details..."
-//                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
-//                             />
-//                             <div className="flex justify-between text-xs mt-2 text-gray-500">
-//                                 <span>{formData.message.length} characters</span>
-//                                 {formData.message.length > 500 && (
-//                                     <span className="text-red-500">Maximum 500 characters recommended</span>
-//                                 )}
-//                             </div>
-//                         </div>
-
-//                         {/* Submit Button */}
-//                         <button
-//                             type="submit"
-//                             disabled={isSubmitting}
-//                             className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-200 ${isSubmitting
-//                                 ? "bg-gray-400 cursor-not-allowed"
-//                                 : "bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-//                                 }`}
-//                         >
-//                             {isSubmitting ? (
-//                                 <div className="flex items-center justify-center space-x-2">
-//                                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-//                                     <span>Submitting...</span>
-//                                 </div>
-//                             ) : (
-//                                 <div className="flex items-center justify-center space-x-2">
-//                                     <span>📤</span>
-//                                     <span>Submit Report</span>
-//                                 </div>
-//                             )}
-//                         </button>
-//                     </form>
-
-//                     <div className="mt-6 text-center">
-//                         <p className="text-xs text-gray-500">
-//                             Customer report will be securely stored and accessible to authorized team members.
-//                         </p>
-//                     </div>
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default CustomerReportForm;
-
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // ✅ import navigation hook
 
 const API_BASE = "http://localhost:8000";
 
-const CustomerReportForm = ({ onSuccess }) => {
-    const navigate = useNavigate(); // ✅ initialize navigate
-
-    const [formData, setFormData] = useState({
-        customer_name: "",
-        report_date: "",
-        message: "",
-        products: [],
+const ReportsDashboard = () => {
+    const [activeReport, setActiveReport] = useState("sales");
+    const [reportData, setReportData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [dateRange, setDateRange] = useState({
+        start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split("T")[0],
+        end: new Date().toISOString().split("T")[0]
     });
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [products, setProducts] = useState([]);
-    const [accordionOpen, setAccordionOpen] = useState(false);
-    const [loadingProducts, setLoadingProducts] = useState(true);
-    const [error, setError] = useState(null);
-
-    // ✅ Fetch products from backend
-    useEffect(() => {
-        const loadProducts = async () => {
-            try {
-                setLoadingProducts(true);
-                const response = await fetch(`${API_BASE}/reports/products/`);
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                const data = await response.json();
-                setProducts(data);
-            } catch (err) {
-                console.error("Error fetching products:", err);
-                setError("⚠️ Failed to load products");
-                toast.error("⚠️ Failed to load products");
-            } finally {
-                setLoadingProducts(false);
-            }
-        };
-        loadProducts();
-    }, []);
-
-    // ✅ Handle input changes
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    // ✅ Toggle selected products
-    const handleProductToggle = (productId) => {
-        setFormData((prev) => {
-            const alreadySelected = prev.products.includes(productId);
-            return {
-                ...prev,
-                products: alreadySelected
-                    ? prev.products.filter((id) => id !== productId)
-                    : [...prev.products, productId],
-            };
-        });
-    };
-
-    // ✅ Handle form submission
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-
+    // 📈 Fetch Report Data
+    const fetchReportData = async (reportType) => {
+        setLoading(true);
         try {
-            const response = await axios.post(`${API_BASE}/reports/api/reports/`, formData);
-            toast.success("✅ Report submitted successfully!");
+            let endpoint = "";
 
-            console.log("Report Response:", response.data);
+            switch (reportType) {
+                case "sales":
+                    endpoint = `${API_BASE}/reports/api/sales-report/?start_date=${dateRange.start}&end_date=${dateRange.end}`;
+                    break;
+                case "products":
+                    endpoint = `${API_BASE}/reports/api/products-report/`;
+                    break;
+                case "inventory":
+                    endpoint = `${API_BASE}/reports/api/inventory-report/`;
+                    break;
+                case "low-stock":
+                    endpoint = `${API_BASE}/reports/api/low-stock-report/`;
+                    break;
+                case "out-of-stock":
+                    endpoint = `${API_BASE}/reports/api/out-of-stock-report/`;
+                    break;
+                default:
+                    endpoint = `${API_BASE}/reports/api/sales-report/`;
+            }
 
-            // ✅ Navigate to dashboard after success
-            setTimeout(() => {
-                navigate("/dashboard");
-            }, 1500);
-
+            const response = await axios.get(endpoint);
+            setReportData(response.data);
         } catch (error) {
-            console.error("Error submitting report:", error);
-            toast.error("❌ Failed to submit report");
+            console.error(`Error fetching ${reportType} report:`, error);
+            toast.error(`Failed to load ${reportType.replace("-", " ")} report`);
         } finally {
-            setIsSubmitting(false);
+            setLoading(false);
         }
     };
 
-    const today = new Date().toISOString().split("T")[0];
+    useEffect(() => {
+        fetchReportData(activeReport);
+    }, [activeReport, dateRange]);
+
+    // 📤 Export Report
+    const exportReport = (format = "pdf") => {
+        toast.info(`Exporting ${activeReport} report as ${format.toUpperCase()}`);
+        // Implement export functionality here
+    };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md mx-auto">
-                <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <div className="mx-auto h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
-                            <span className="text-2xl">📊</span>
-                        </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Customer Report</h2>
-                        <p className="text-gray-600 text-sm">
-                            Fill in customer details and report information
-                        </p>
-                    </div>
+        <div className="min-h-screen bg-gray-50 p-6">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics Reports</h1>
+                    <p className="text-gray-600">Comprehensive business intelligence dashboard</p>
+                </div>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Customer Name */}
-                        <div>
-                            <label htmlFor="customer_name" className="block text-sm font-medium text-gray-700 mb-2">
-                                👤 Customer Name
-                            </label>
-                            <input
-                                type="text"
-                                id="customer_name"
-                                name="customer_name"
-                                value={formData.customer_name}
-                                onChange={handleChange}
-                                required
-                                placeholder="Enter customer full name"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                        </div>
-
-                        {/* Report Date */}
-                        <div>
-                            <label htmlFor="report_date" className="block text-sm font-medium text-gray-700 mb-2">
-                                📅 Report Date
-                            </label>
-                            <input
-                                type="date"
-                                id="report_date"
-                                name="report_date"
-                                value={formData.report_date}
-                                onChange={handleChange}
-                                max={today}
-                                required
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                        </div>
-
-                        {/* Accordion for Products */}
-                        <div className="border rounded-lg shadow-sm overflow-hidden">
-                            <button
-                                type="button"
-                                onClick={() => setAccordionOpen(!accordionOpen)}
-                                className="w-full flex justify-between items-center px-4 py-3 bg-gray-100 hover:bg-gray-200 transition"
-                            >
-                                <span className="font-medium text-gray-700">🛒 Select Products</span>
-                                <span>{accordionOpen ? "▲" : "▼"}</span>
-                            </button>
-
-                            {accordionOpen && (
-                                <div className="max-h-60 overflow-y-auto bg-white border-t">
-                                    {loadingProducts ? (
-                                        <p className="text-center py-3 text-gray-500 text-sm">Loading products...</p>
-                                    ) : error ? (
-                                        <p className="text-center py-3 text-red-500 text-sm">{error}</p>
-                                    ) : products.length > 0 ? (
-                                        products.map((product) => (
-                                            <label
-                                                key={product.id}
-                                                className="flex items-center justify-between px-4 py-2 hover:bg-gray-50 cursor-pointer"
-                                            >
-                                                <span className="text-gray-700 text-sm">{product.name}</span>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={formData.products.includes(product.id)}
-                                                    onChange={() => handleProductToggle(product.id)}
-                                                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
-                                                />
-                                            </label>
-                                        ))
-                                    ) : (
-                                        <p className="text-gray-500 text-sm px-4 py-3">No products available.</p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Message */}
-                        <div>
-                            <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                                💬 Report Message
-                            </label>
-                            <textarea
-                                id="message"
-                                name="message"
-                                value={formData.message}
-                                onChange={handleChange}
-                                required
-                                rows="4"
-                                placeholder="Describe the issue, feedback, or report details..."
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
-                            />
-                            <div className="flex justify-between text-xs mt-2 text-gray-500">
-                                <span>{formData.message.length} characters</span>
-                                {formData.message.length > 500 && (
-                                    <span className="text-red-500">Maximum 500 characters recommended</span>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Submit Button */}
+                {/* Report Type Selector */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                    {[
+                        { id: "sales", name: "Sales Report", icon: "💰" },
+                        { id: "products", name: "Products", icon: "📦" },
+                        { id: "inventory", name: "Inventory", icon: "📊" },
+                        { id: "low-stock", name: "Low Stock", icon: "⚠️" },
+                        { id: "out-of-stock", name: "Out of Stock", icon: "❌" }
+                    ].map((report) => (
                         <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-200 ${isSubmitting
-                                ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                            key={report.id}
+                            onClick={() => setActiveReport(report.id)}
+                            className={`p-4 rounded-lg border-2 transition-all ${activeReport === report.id
+                                ? "border-blue-500 bg-blue-50 text-blue-700"
+                                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
                                 }`}
                         >
-                            {isSubmitting ? (
-                                <div className="flex items-center justify-center space-x-2">
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    <span>Submitting...</span>
-                                </div>
-                            ) : (
-                                <div className="flex items-center justify-center space-x-2">
-                                    <span>📤</span>
-                                    <span>Submit Report</span>
-                                </div>
-                            )}
+                            <div className="text-2xl mb-2">{report.icon}</div>
+                            <div className="font-medium text-sm">{report.name}</div>
                         </button>
-                    </form>
+                    ))}
+                </div>
 
-                    <div className="mt-6 text-center">
-                        <p className="text-xs text-gray-500">
-                            Customer report will be securely stored and accessible to authorized team members.
-                        </p>
+                {/* Date Range Filter */}
+                <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
+                    <div className="flex flex-col sm:flex-row gap-4 items-center">
+                        <span className="font-medium text-gray-700">Date Range:</span>
+                        <div className="flex gap-4">
+                            <input
+                                type="date"
+                                value={dateRange.start}
+                                onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                                className="px-3 py-2 border rounded-lg"
+                            />
+                            <span className="self-center">to</span>
+                            <input
+                                type="date"
+                                value={dateRange.end}
+                                onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                                className="px-3 py-2 border rounded-lg"
+                            />
+                        </div>
+                        <div className="flex gap-2 ml-auto">
+                            <button
+                                onClick={() => exportReport("pdf")}
+                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                            >
+                                📄 Export PDF
+                            </button>
+                            <button
+                                onClick={() => exportReport("excel")}
+                                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                            >
+                                📊 Export Excel
+                            </button>
+                        </div>
                     </div>
+                </div>
+
+                {/* Report Content */}
+                <div className="bg-white rounded-lg shadow-sm border p-6">
+                    {loading ? (
+                        <div className="flex justify-center items-center py-12">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                        </div>
+                    ) : (
+                        <ReportContent
+                            type={activeReport}
+                            data={reportData}
+                            dateRange={dateRange}
+                        />
+                    )}
                 </div>
             </div>
         </div>
     );
 };
 
-export default CustomerReportForm;
+// 📊 Report Content Components
+const ReportContent = ({ type, data, dateRange }) => {
+    if (!data) return <div className="text-center py-8 text-gray-500">No data available</div>;
+
+    switch (type) {
+        case "sales":
+            return <SalesReport data={data} dateRange={dateRange} />;
+        case "products":
+            return <ProductsReport data={data} />;
+        case "inventory":
+            return <InventoryReport data={data} />;
+        case "low-stock":
+            return <LowStockReport data={data} />;
+        case "out-of-stock":
+            return <OutOfStockReport data={data} />;
+        default:
+            return <SalesReport data={data} dateRange={dateRange} />;
+    }
+};
+
+// 💰 Sales Report Component
+const SalesReport = ({ data, dateRange }) => {
+    return (
+        <div>
+            <h2 className="text-2xl font-bold mb-6">Sales Report</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div className="text-blue-600 font-bold text-2xl">${data?.total_revenue || "0"}</div>
+                    <div className="text-blue-800 font-medium">Total Revenue</div>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <div className="text-green-600 font-bold text-2xl">{data?.total_orders || "0"}</div>
+                    <div className="text-green-800 font-medium">Total Orders</div>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <div className="text-purple-600 font-bold text-2xl">${data?.average_order_value || "0"}</div>
+                    <div className="text-purple-800 font-medium">Average Order</div>
+                </div>
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                    <div className="text-orange-600 font-bold text-2xl">{data?.top_selling_product || "N/A"}</div>
+                    <div className="text-orange-800 font-medium">Top Product</div>
+                </div>
+            </div>
+
+            {/* Sales Table */}
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customers</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {data?.daily_sales?.map((sale, index) => (
+                            <tr key={index}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{sale.date}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{sale.orders}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${sale.revenue}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{sale.customers}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+// 📦 Products Report Component
+const ProductsReport = ({ data }) => {
+    return (
+        <div>
+            <h2 className="text-2xl font-bold mb-6">Products Report</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div className="text-blue-600 font-bold text-2xl">{data?.total_products || "0"}</div>
+                    <div className="text-blue-800 font-medium">Total Products</div>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <div className="text-green-600 font-bold text-2xl">{data?.active_products || "0"}</div>
+                    <div className="text-green-800 font-medium">Active Products</div>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <div className="text-purple-600 font-bold text-2xl">{data?.out_of_stock || "0"}</div>
+                    <div className="text-purple-800 font-medium">Out of Stock</div>
+                </div>
+            </div>
+
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {data?.products?.map((product) => (
+                            <tr key={product.id}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {product.name}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {product.category}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${product.price}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {product.stock_quantity}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${product.status === "In Stock"
+                                            ? "bg-green-100 text-green-800"
+                                            : product.status === "Low Stock"
+                                                ? "bg-yellow-100 text-yellow-800"
+                                                : "bg-red-100 text-red-800"
+                                        }`}>
+                                        {product.status}
+                                    </span>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+// 📊 Inventory Report Component
+const InventoryReport = ({ data }) => {
+    return (
+        <div>
+            <h2 className="text-2xl font-bold mb-6">Inventory Report</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div className="text-blue-600 font-bold text-2xl">{data?.total_items || "0"}</div>
+                    <div className="text-blue-800 font-medium">Total Items</div>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <div className="text-green-600 font-bold text-2xl">${data?.total_value || "0"}</div>
+                    <div className="text-green-800 font-medium">Total Value</div>
+                </div>
+                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    <div className="text-yellow-600 font-bold text-2xl">{data?.low_stock_items || "0"}</div>
+                    <div className="text-yellow-800 font-medium">Low Stock Items</div>
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                    <div className="text-red-600 font-bold text-2xl">{data?.out_of_stock_items || "0"}</div>
+                    <div className="text-red-800 font-medium">Out of Stock</div>
+                </div>
+            </div>
+
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current Stock</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Min Stock</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {data?.inventory?.map((item) => (
+                            <tr key={item.id}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {item.name}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {item.sku}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {item.current_stock}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {item.min_stock}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${item.value}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${item.status === "Adequate"
+                                            ? "bg-green-100 text-green-800"
+                                            : item.status === "Low Stock"
+                                                ? "bg-yellow-100 text-yellow-800"
+                                                : "bg-red-100 text-red-800"
+                                        }`}>
+                                        {item.status}
+                                    </span>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+// ⚠️ Low Stock Report Component
+const LowStockReport = ({ data }) => {
+    return (
+        <div>
+            <h2 className="text-2xl font-bold mb-6">Low Stock Alert Report</h2>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center">
+                    <span className="text-2xl mr-3">⚠️</span>
+                    <div>
+                        <h3 className="font-bold text-yellow-800">Low Stock Warning</h3>
+                        <p className="text-yellow-700">
+                            {data?.count || "0"} products are running low and need restocking
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current Stock</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Min Stock</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reorder Level</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Urgency</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {data?.products?.map((product) => (
+                            <tr key={product.id}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {product.name}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {product.current_stock}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {product.min_stock}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {product.reorder_level}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${product.urgency === "High"
+                                            ? "bg-red-100 text-red-800"
+                                            : product.urgency === "Medium"
+                                                ? "bg-orange-100 text-orange-800"
+                                                : "bg-yellow-100 text-yellow-800"
+                                        }`}>
+                                        {product.urgency} Priority
+                                    </span>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+// ❌ Out of Stock Report Component
+const OutOfStockReport = ({ data }) => {
+    return (
+        <div>
+            <h2 className="text-2xl font-bold mb-6">Out of Stock Report</h2>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center">
+                    <span className="text-2xl mr-3">❌</span>
+                    <div>
+                        <h3 className="font-bold text-red-800">Critical Stock Alert</h3>
+                        <p className="text-red-700">
+                            {data?.count || "0"} products are completely out of stock
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Stock Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Days Out of Stock</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {data?.products?.map((product) => (
+                            <tr key={product.id}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {product.name}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {product.sku}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {product.last_stock_date || "N/A"}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {product.days_out_of_stock || "N/A"}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <button className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
+                                        Reorder
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+export default ReportsDashboard;

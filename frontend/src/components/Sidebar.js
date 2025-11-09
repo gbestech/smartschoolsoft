@@ -11,11 +11,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
     const userMenuItems = [
         { path: '/dashboard', icon: '📊', label: 'Dashboard', key: 'dashboard' },
         { path: '/profile', icon: '👤', label: 'Profile', key: 'profile' },
-        {
-            path: '/products',
-            icon: '📦',
-            label: 'Products',
-            key: 'products',
+        { path: '/products', icon: '📦', label: 'Products', key: 'products',
             submenu: [
                 // { path: '/products/categories', label: 'Categories', key: 'categories' },
                 // { path: '/products/inventory', label: 'Inventory', key: 'inventory' },
@@ -23,6 +19,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
             ]
         },
         { path: '/orders', icon: '🛒', label: 'Orders', key: 'orders' },
+        { path: '/report', icon: '🛒', label: 'Report', key: 'report' },
         { path: '/customerReport', icon: '📈', label: 'Customer Report', key: 'reprot' },
         { path: '/messages', icon: '💬', label: 'Messages', key: 'messages' },
         { path: '/settings', icon: '⚙️', label: 'Settings', key: 'settings' },
@@ -32,24 +29,27 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
     const adminMenuItems = [
         { path: '/admin', icon: '📊', label: 'Overview', key: 'overview' },
         { path: '/admin/users', icon: '👥', label: 'User Management', key: 'users' },
-        {
-            path: '/admin/products',
-            icon: '📦',
-            label: 'Products',
-            key: 'products',
+        {path: '/admin/products',icon: '📦',label: 'Products',key: 'products',
             submenu: [
                 { path: '/admin/products/all', label: 'All Products', key: 'all-products' },
-                { path: '/admin/products/inventory', icon: '📈', label: 'All Inventory', key: 'all-inventory' },
+                { path: '/inventory', icon: '📈', label: 'All Inventory', key: 'all-inventory' },
                 // { path: '/admin/products/categories', label: 'Categories', key: 'categories' },
-
                 { path: '/admin/products/analytics', label: 'Analytics', key: 'analytics' },
                 { path: '/admin/products/add', icon: '📈', label: 'Add New', key: 'add-product' },
-                { path: '/orders', icon: '📈', label:  'Order', key: 'order' },
-               
+                { path: '/orders', icon: '📈', label: 'Order', key: 'order' },
+            ]
+        },
+        // HR Management Menu with Submenus
+        { path: '/admin/hr', icon: '👥', label: 'HR Management', key: 'hr',
+            submenu: [
+                { path: '/admin/hr/view-staff', icon: '👥', label: 'View Staff', key: 'view-staff' },
+                { path: '/admin/hr/add-staff', icon: '➕', label: 'Add Staff', key: 'add-staff' },
+                { path: '/admin/hr/positions', icon: '💼', label: 'Positions', key: 'positions' },
+                { path: '/admin/hr/departments', icon: '🏢', label: 'Departments', key: 'departments' },
+                { path: '/admin/hr/roles', icon: '🔐', label: 'Roles', key: 'roles' },
             ]
         },
         // { path: '/reports', icon: '📈', label: 'Reports', key: 'reports' },
-       
         { path: '/admin/settings', icon: '⚙️', label: 'System Settings', key: 'settings' },
         { path: '/activitylogs', icon: '📋', label: 'Activity Logs', key: 'activitylogs' },
         { path: '/debtors', icon: '💳', label: 'Debtors', key: 'debtor' },
@@ -168,12 +168,15 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                                         <Link
                                             key={subItem.key}
                                             to={subItem.path}
-                                            className={`block py-2 px-3 rounded-lg text-sm transition-colors ${isActive(subItem.path)
+                                            className={`flex items-center py-2 px-3 rounded-lg text-sm transition-colors ${isActive(subItem.path)
                                                 ? 'bg-blue-100 text-blue-700 font-medium'
                                                 : 'text-gray-600 hover:bg-gray-100'
                                                 }`}
                                             onClick={(e) => handleSubmenuClick(subItem.path, e)}
                                         >
+                                            {subItem.icon && (
+                                                <span className="text-base mr-2">{subItem.icon}</span>
+                                            )}
                                             {subItem.label}
                                         </Link>
                                     ))}

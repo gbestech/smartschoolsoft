@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -36,6 +38,11 @@ const AddProduct = () => {
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [activeSection, setActiveSection] = useState("basic");
 
+  // Check if category should hide dates
+  const shouldHideDates = () => {
+    return formData.category === "ELECTRONICS" || formData.category === "STATIONERY";
+  };
+
   // Fetch suppliers
   useEffect(() => {
     const fetchSuppliers = async () => {
@@ -64,12 +71,32 @@ const AddProduct = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+
+    // If category is changing and it's to/from ELECTRONICS/STATIONERY, clear dates
+    if (name === "category") {
+      const newCategory = value;
+      const wasHidingDates = shouldHideDates();
+      const willHideDates = newCategory === "ELECTRONICS" || newCategory === "STATIONERY";
+
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        // Clear dates if switching to categories that hide dates
+        ...(wasHidingDates !== willHideDates && {
+          manufacturing_date: "",
+          expiry_date: "",
+          is_perishable: false
+        })
+      }));
+    } else {
+      setFormData({
+        ...formData,
+        [name]: type === "checkbox" ? checked : value,
+      });
+    }
   };
 
+  // In your handleSubmit function, replace the data preparation with:
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -84,8 +111,8 @@ const AddProduct = () => {
       return;
     }
 
-    // Validation for dates
-    if (formData.expiry_date && formData.manufacturing_date) {
+    // Validation for dates - only if dates are visible/required and both are provided
+    if (!shouldHideDates() && formData.expiry_date && formData.manufacturing_date) {
       const manufacturingDate = new Date(formData.manufacturing_date);
       const expiryDate = new Date(formData.expiry_date);
 
@@ -114,9 +141,50 @@ const AddProduct = () => {
       const token = localStorage.getItem("token");
       console.log("Sending product data:", formData);
 
+      // Prepare data for submission - convert empty strings to appropriate values
+      const submitData = {
+        ...formData,
+        // Convert empty date strings to null
+        manufacturing_date: formData.manufacturing_date || null,
+        expiry_date: formData.expiry_date || null,
+        // For ELECTRONICS and STATIONERY, always set dates to null
+        ...(shouldHideDates() && {
+          manufacturing_date: null,
+          expiry_date: null,
+          is_perishable: false
+        })
+      };
+
+      // Clean up optional fields - provide default values for required fields
+      const fieldCleanup = {
+        // Required fields that can't be null - provide empty string instead
+        'dimensions': formData.dimensions || '', // Provide empty string instead of null
+        'batch_number': formData.batch_number || '',
+        'barcode': formData.barcode || '',
+        'location': formData.location || '',
+        // Optional numeric fields - convert to null if empty
+        'supplier': formData.supplier || null,
+        'min_stock_level': formData.min_stock_level ? parseInt(formData.min_stock_level) : null,
+        'max_stock_level': formData.max_stock_level ? parseInt(formData.max_stock_level) : null,
+        'reorder_point': formData.reorder_point ? parseInt(formData.reorder_point) : null,
+        'weight': formData.weight ? parseFloat(formData.weight) : null,
+      };
+
+      // Apply the cleanup
+      Object.keys(fieldCleanup).forEach(field => {
+        submitData[field] = fieldCleanup[field];
+      });
+
+      // Convert required numeric fields
+      if (submitData.price) submitData.price = parseFloat(submitData.price);
+      if (submitData.selling_price) submitData.selling_price = parseFloat(submitData.selling_price);
+      if (submitData.quantity) submitData.quantity = parseInt(submitData.quantity);
+
+      console.log("Cleaned product data:", submitData);
+
       const response = await axios.post(
         "http://127.0.0.1:8000/api/products/",
-        formData,
+        submitData,
         {
           headers: {
             "Content-Type": "application/json",
@@ -147,7 +215,7 @@ const AddProduct = () => {
         barcode: "",
         location: "",
         weight: "",
-        dimensions: "",
+        dimensions: "", // Keep as empty string
         is_perishable: false,
         reorder_point: ""
       });
@@ -395,8 +463,8 @@ const AddProduct = () => {
                   min="0"
                   step="0.01"
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm ${formData.price && formData.selling_price && parseFloat(formData.price) > parseFloat(formData.selling_price)
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-gray-300'
+                    ? 'border-red-300 bg-red-50'
+                    : 'border-gray-300'
                     }`}
                   placeholder="0.00"
                   required
@@ -415,8 +483,8 @@ const AddProduct = () => {
                   min="0"
                   step="0.01"
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm ${formData.price && formData.selling_price && parseFloat(formData.price) > parseFloat(formData.selling_price)
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-gray-300'
+                    ? 'border-red-300 bg-red-50'
+                    : 'border-gray-300'
                     }`}
                   placeholder="0.00"
                   required
@@ -543,33 +611,48 @@ const AddProduct = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Manufacturing Date
-                  </label>
-                  <input
-                    type="date"
-                    name="manufacturing_date"
-                    value={formData.manufacturing_date}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  />
-                </div>
+              {/* Conditionally render date fields */}
+              {!shouldHideDates() && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Manufacturing Date
+                    </label>
+                    <input
+                      type="date"
+                      name="manufacturing_date"
+                      value={formData.manufacturing_date}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Expiry Date
-                  </label>
-                  <input
-                    type="date"
-                    name="expiry_date"
-                    value={formData.expiry_date}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Expiry Date
+                    </label>
+                    <input
+                      type="date"
+                      name="expiry_date"
+                      value={formData.expiry_date}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Show info message when dates are hidden */}
+              {shouldHideDates() && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center">
+                    <span className="text-blue-500 mr-2">ℹ️</span>
+                    <span className="text-blue-700 text-sm">
+                      Manufacturing and expiry dates are not required for {formData.category.toLowerCase()} products.
+                    </span>
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -602,18 +685,21 @@ const AddProduct = () => {
                 </div>
               </div>
 
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="is_perishable"
-                  checked={formData.is_perishable}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label className="ml-2 block text-sm text-gray-700">
-                  This product is perishable
-                </label>
-              </div>
+              {/* Hide perishable checkbox for ELECTRONICS and STATIONERY */}
+              {!shouldHideDates() && (
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="is_perishable"
+                    checked={formData.is_perishable}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label className="ml-2 block text-sm text-gray-700">
+                    This product is perishable
+                  </label>
+                </div>
+              )}
             </div>
           )}
 

@@ -224,15 +224,15 @@ const Orders = () => {
         }
 
         // Show payment confirmation message when customer pays any amount
-        if (paidAmount > 0) {
-            const toastMessage = `💰 ${customerName || 'Customer'} paid ₦${paidAmount.toLocaleString()}`;
-            const newToastId = toast.success(toastMessage, {
-                position: "top-center",
-                autoClose: 3000,
-                toastId: `payment-${paidAmount}`
-            });
-            setLastToastId(newToastId);
-        }
+        // if (paidAmount > 0) {
+        //     const toastMessage = `💰 ${customerName || 'Customer'} paid ₦${paidAmount.toLocaleString()}`;
+        //     const newToastId = toast.success(toastMessage, {
+        //         position: "top-center",
+        //         autoClose: 3000,
+        //         toastId: `payment-${paidAmount}`
+        //     });
+        //     setLastToastId(newToastId);
+        // }
     };
 
     // Confirm sale
@@ -689,337 +689,352 @@ const Orders = () => {
                 <p className="text-gray-600 mt-2">Process sales and manage customer orders</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left Column - Customer Info and Cart */}
-                <div className="space-y-6">
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-xl font-semibold text-gray-800 mb-4">Customer Information</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Customer Name *
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter customer name"
-                                    value={customerName}
-                                    onChange={(e) => setCustomerName(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    required
-                                />
+            {/* Sales Form Section */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Create New Sale</h2>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Left Column - Customer Info */}
+                    <div className="space-y-6">
+                        <div className="bg-gray-50 rounded-lg p-6">
+                            <h3 className="text-xl font-semibold text-gray-800 mb-4">Customer Information</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Customer Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter customer name"
+                                        value={customerName}
+                                        onChange={(e) => setCustomerName(e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Phone Number *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter phone number"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Address
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter address"
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Gender
+                                    </label>
+                                    <select
+                                        value={gender}
+                                        onChange={(e) => setGender(e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    >
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Sale Date
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={saleDate}
+                                        onChange={(e) => setSaleDate(e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Phone Number *
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter phone number"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Address
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter address"
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Gender
-                                </label>
+                        </div>
+
+                        <div className="bg-gray-50 rounded-lg p-6">
+                            <h3 className="text-xl font-semibold text-gray-800 mb-4">Add Products</h3>
+                            <div className="flex gap-3">
                                 <select
-                                    value={gender}
-                                    onChange={(e) => setGender(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    value={selectedId}
+                                    onChange={(e) => setSelectedId(e.target.value)}
                                 >
-                                    <option value="">Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
+                                    <option value="">Select Product</option>
+                                    {products.map((product) => (
+                                        <option key={product.id} value={product.id}>
+                                            {product.name} - ₦{Number(product.selling_price || product.price).toLocaleString()}
+                                            (Stock: {product.quantity})
+                                        </option>
+                                    ))}
                                 </select>
-                            </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Sale Date
-                                </label>
-                                <input
-                                    type="date"
-                                    value={saleDate}
-                                    onChange={(e) => setSaleDate(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-xl font-semibold text-gray-800 mb-4">Add Products</h3>
-                        <div className="flex gap-3">
-                            <select
-                                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                value={selectedId}
-                                onChange={(e) => setSelectedId(e.target.value)}
-                            >
-                                <option value="">Select Product</option>
-                                {products.map((product) => (
-                                    <option key={product.id} value={product.id}>
-                                        {product.name} - ₦{Number(product.selling_price || product.price).toLocaleString()}
-                                        (Stock: {product.quantity})
-                                    </option>
-                                ))}
-                            </select>
-                            <button
-                                onClick={handleAdd}
-                                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-                            >
-                                Add
-                            </button>
-                        </div>
-                    </div>
-
-                    {cart.length > 0 && (
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-xl font-semibold text-gray-800">Shopping Cart</h3>
-                                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                                    {cart.length} items
-                                </span>
-                            </div>
-
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-blue-500">
-                                        <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Product
-                                            </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Price
-                                            </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Quantity
-                                            </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Total
-                                            </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Action
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200">
-                                        {cart.map((item) => (
-                                            <tr key={item.id} className="hover:bg-gray-50">
-                                                <td className="px-4 py-3">
-                                                    <div className="font-medium text-gray-900">{item.name}</div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-900">
-                                                    ₦{Number(item.price).toLocaleString()}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <input
-                                                            type="number"
-                                                            min="1"
-                                                            max={item.quantity}
-                                                            value={item.qty}
-                                                            onChange={(e) =>
-                                                                handleQtyChange(item.id, parseInt(e.target.value) || 1)
-                                                            }
-                                                            className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                        />
-                                                        <span className="text-sm text-gray-500">
-                                                            of {item.quantity}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 font-medium text-gray-900">
-                                                    ₦{Number(item.price * item.qty).toLocaleString()}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <button
-                                                        onClick={() => handleRemove(item.id)}
-                                                        className="text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition-colors text-sm"
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-lg font-semibold text-gray-800">Total Amount:</span>
-                                    <span className="text-2xl font-bold text-green-600">
-                                        ₦{Number(total).toLocaleString()}
-                                    </span>
-                                </div>
-                                <div className="text-sm text-gray-600 italic">
-                                    {totalInWords}
-                                </div>
                                 <button
-                                    onClick={handleSubmit}
-                                    className="w-full mt-4 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold text-lg"
+                                    onClick={handleAdd}
+                                    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
                                 >
-                                    Process Sale
+                                    Add
                                 </button>
                             </div>
                         </div>
-                    )}
-                </div>
-
-                {/* Right Column - Sales History */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-semibold text-gray-800">Sales History</h3>
-                        <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
-                            {sales.length} total sales
-                        </span>
                     </div>
 
-                    {salesError && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                            <div className="flex items-center">
-                                <span className="text-red-500 mr-3">⚠️</span>
-                                <span className="text-red-700">{salesError}</span>
-                            </div>
-                        </div>
-                    )}
+                    {/* Right Column - Cart */}
+                    <div className="space-y-6">
+                        {cart.length > 0 ? (
+                            <div className="bg-gray-50 rounded-lg p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-xl font-semibold text-gray-800">Shopping Cart</h3>
+                                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                                        {cart.length} items
+                                    </span>
+                                </div>
 
-                    {salesLoading ? (
-                        <div className="flex justify-center items-center h-32">
-                            <div className="text-gray-600">Loading sales history...</div>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Customer
-                                            </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Date
-                                            </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Total
-                                            </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Paid
-                                            </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Balance
-                                            </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Actions
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200">
-                                        {currentSales.map((sale) => (
-                                            <tr key={sale.id} className="hover:bg-gray-50">
-                                                <td className="px-4 py-3">
-                                                    <div className="font-medium text-gray-900">{sale.customer_name}</div>
-                                                    <div className="text-sm text-gray-500">{sale.phone}</div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-900">
-                                                    {new Date(sale.date).toLocaleDateString()}
-                                                </td>
-                                                <td className="px-4 py-3 font-medium text-gray-900">
-                                                    ₦{Number(sale.total).toLocaleString()}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <span className="text-green-600 font-medium">
-                                                        ₦{Number(sale.amount_paid).toLocaleString()}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <span className={`font-medium ${sale.balance > 0 ? 'text-orange-600' : 'text-gray-600'}`}>
-                                                        ₦{Number(sale.balance).toLocaleString()}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col space-y-1">
-                                                        <button
-                                                            onClick={() => setViewModal(sale)}
-                                                            className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded transition-colors text-xs"
-                                                        >
-                                                            View
-                                                        </button>
-                                                        {sale.balance > 0 && (
-                                                            <button
-                                                                onClick={() => setUpdateBalanceModal(sale)}
-                                                                className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded transition-colors text-xs"
-                                                            >
-                                                                Update Balance
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            onClick={() => handleDelete(sale.id)}
-                                                            className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition-colors text-xs"
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                </td>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="bg-blue-500">
+                                            <tr>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                                    Product
+                                                </th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                                    Price
+                                                </th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                                    Quantity
+                                                </th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                                    Total
+                                                </th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                                    Action
+                                                </th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            {cart.map((item) => (
+                                                <tr key={item.id} className="hover:bg-gray-50">
+                                                    <td className="px-4 py-3">
+                                                        <div className="font-medium text-gray-900">{item.name}</div>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-900">
+                                                        ₦{Number(item.price).toLocaleString()}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                max={item.quantity}
+                                                                value={item.qty}
+                                                                onChange={(e) =>
+                                                                    handleQtyChange(item.id, parseInt(e.target.value) || 1)
+                                                                }
+                                                                className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                            />
+                                                            <span className="text-sm text-gray-500">
+                                                                of {item.quantity}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">
+                                                        ₦{Number(item.price * item.qty).toLocaleString()}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <button
+                                                            onClick={() => handleRemove(item.id)}
+                                                            className="text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition-colors text-sm"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                            {totalPages > 1 && (
-                                <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
-                                    <div className="text-sm text-gray-500">
-                                        Showing {Math.min(currentSales.length, perPage)} of {sales.length} sales
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            disabled={page === 1}
-                                            onClick={() => setPage(page - 1)}
-                                            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            Previous
-                                        </button>
-                                        <span className="px-3 py-1 bg-blue-500 text-white rounded-lg">
-                                            {page}
+                                <div className="mt-6 p-4 bg-white rounded-lg border border-gray-200">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-lg font-semibold text-gray-800">Total Amount:</span>
+                                        <span className="text-2xl font-bold text-green-600">
+                                            ₦{Number(total).toLocaleString()}
                                         </span>
-                                        <button
-                                            disabled={page === totalPages}
-                                            onClick={() => setPage(page + 1)}
-                                            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            Next
-                                        </button>
                                     </div>
+                                    <div className="text-sm text-gray-600 italic">
+                                        {totalInWords}
+                                    </div>
+                                    <button
+                                        onClick={handleSubmit}
+                                        className="w-full mt-4 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold text-lg"
+                                    >
+                                        Process Sale
+                                    </button>
                                 </div>
-                            )}
-
-                            {sales.length === 0 && !salesLoading && (
-                                <div className="text-center py-8">
-                                    <div className="text-4xl mb-4">📊</div>
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Sales Yet</h3>
-                                    <p className="text-gray-500">Start by creating your first sale using the form on the left.</p>
-                                </div>
-                            )}
-                        </>
-                    )}
+                            </div>
+                        ) : (
+                            <div className="bg-gray-50 rounded-lg p-8 text-center">
+                                <div className="text-4xl mb-4">🛒</div>
+                                <h3 className="text-lg font-semibold text-gray-900 ">Your Cart is Empty</h3>
+                                <p className="text-gray-500">Add products to the cart to start a sale.</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
+            {/* Sales History Section - Separated and placed below */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">Sales History</h2>
+                    <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {sales.length} total sales
+                    </span>
+                </div>
+
+                {salesError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                        <div className="flex items-center">
+                            <span className="text-red-500 mr-3">⚠️</span>
+                            <span className="text-red-700">{salesError}</span>
+                        </div>
+                    </div>
+                )}
+
+                {salesLoading ? (
+                    <div className="flex justify-center items-center h-32">
+                        <div className="text-gray-600">Loading sales history...</div>
+                    </div>
+                ) : (
+                    <>
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Customer
+                                        </th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Date
+                                        </th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total
+                                        </th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Paid
+                                        </th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Balance
+                                        </th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {currentSales.map((sale) => (
+                                        <tr key={sale.id} className="hover:bg-gray-50">
+                                            <td className="px-4 py-3">
+                                                <div className="font-medium text-gray-900">{sale.customer_name}</div>
+                                                <div className="text-sm text-gray-500">{sale.phone}</div>
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-900">
+                                                {new Date(sale.date).toLocaleDateString()}
+                                            </td>
+                                            <td className="px-4 py-3 font-medium text-gray-900">
+                                                ₦{Number(sale.total).toLocaleString()}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className="text-green-600 font-medium">
+                                                    ₦{Number(sale.amount_paid).toLocaleString()}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className={`font-medium ${sale.balance > 0 ? 'text-orange-600' : 'text-gray-600'}`}>
+                                                    ₦{Number(sale.balance).toLocaleString()}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex flex-col space-y-1">
+                                                    <button
+                                                        onClick={() => setViewModal(sale)}
+                                                        className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded transition-colors text-xs"
+                                                    >
+                                                        View
+                                                    </button>
+                                                    {sale.balance > 0 && (
+                                                        <button
+                                                            onClick={() => setUpdateBalanceModal(sale)}
+                                                            className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded transition-colors text-xs"
+                                                        >
+                                                            Update Balance
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => handleDelete(sale.id)}
+                                                        className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition-colors text-xs"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                                <div className="text-sm text-gray-500">
+                                    Showing {Math.min(currentSales.length, perPage)} of {sales.length} sales
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        disabled={page === 1}
+                                        onClick={() => setPage(page - 1)}
+                                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Previous
+                                    </button>
+                                    <span className="px-3 py-1 bg-blue-500 text-white rounded-lg">
+                                        {page}
+                                    </span>
+                                    <button
+                                        disabled={page === totalPages}
+                                        onClick={() => setPage(page + 1)}
+                                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {sales.length === 0 && !salesLoading && (
+                            <div className="text-center py-8">
+                                <div className="text-4xl mb-4">📊</div>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Sales Yet</h3>
+                                <p className="text-gray-500">Start by creating your first sale using the form above.</p>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+
+            {/* All modals remain exactly the same */}
             {/* Confirm Sale Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
