@@ -181,7 +181,9 @@ const CustomerReportForm = ({ onSuccess }) => {
     const characterCount = getPlainTextLength();
 
     return (
+        
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-4 px-4 sm:px-6 lg:px-8">
+        \
             <div className="max-w-2xl mx-auto">
                 <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
                     {/* Header */}

@@ -8,8 +8,14 @@ class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
         ('admin', 'Admin'),
         ('user', 'User'),
+        ('staff', 'Staff'),
+        ('supplier', 'Supplier'),
+        ('distributor', 'Distributor'),
+        ('inspector', 'Inspector'),
+        ('manager', 'Manager')
+        
     )
-    user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='user')
+    user_type = models.CharField(max_length=100, choices=USER_TYPE_CHOICES, default='user')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

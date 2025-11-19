@@ -47,6 +47,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                 { path: '/admin/hr/positions', icon: '💼', label: 'Positions', key: 'positions' },
                 { path: '/admin/hr/departments', icon: '🏢', label: 'Departments', key: 'departments' },
                 { path: '/admin/hr/roles', icon: '🔐', label: 'Roles', key: 'roles' },
+                { path: '/settings', icon: '⚙️', label: 'Settings', key: 'settings' },
             ]
         },
         // { path: '/reports', icon: '📈', label: 'Reports', key: 'reports' },

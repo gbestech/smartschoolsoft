@@ -57,16 +57,7 @@ class Supplier(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = 'Supplier'
-        verbose_name_plural = 'Suppliers'
-        indexes = [
-            models.Index(fields=['name']),
-            models.Index(fields=['email']),
-            models.Index(fields=['status']),
-            models.Index(fields=['type']),
-        ]
+  
     
     def __str__(self):
         return f"{self.name} ({self.get_type_display()})"

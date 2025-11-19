@@ -42,6 +42,7 @@ import Suppliers from './pages/Supplier';
 import EditProfile from './pages/EditProfile';
 import ReportsDashboard from './pages/Report';
 import StaffPage from './pages/StaffPage';
+import ViewStaff from './pages/ViewStaff';
 
 
 function App() {
@@ -149,6 +150,7 @@ function App() {
               </ProtectedRoute>
             } />
 
+
             <Route path="edit-product/:id" element={
               <ProtectedRoute>
                 <DashboardLayout>
@@ -243,6 +245,13 @@ function App() {
               <ProtectedRoute adminOnly={true}>
                 <DashboardLayout>
                   <AllProducts />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/hr/view-staff" element={
+              <ProtectedRoute adminOnly={true}>
+                <DashboardLayout>
+                  <ViewStaff />
                 </DashboardLayout>
               </ProtectedRoute>
             } />

@@ -1833,7 +1833,7 @@ const Orders = () => {
                 }
             });
 
-            toast.success("🗑️ Sale deleted successfully!");
+  
             setSales(prevSales => prevSales.filter((s) => s.id !== id));
             await fetchSales();
 
