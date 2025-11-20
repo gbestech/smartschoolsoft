@@ -22,7 +22,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
         { path: '/report', icon: '🛒', label: 'Report', key: 'report' },
         { path: '/customerReport', icon: '📈', label: 'Customer Report', key: 'reprot' },
         { path: '/messages', icon: '💬', label: 'Messages', key: 'messages' },
-        { path: '/settings', icon: '⚙️', label: 'Settings', key: 'settings' },
+        // { path: '/settings', icon: '⚙️', label: 'Settings', key: 'settings' },
         { path: '/viewCustomerReport', icon: '⚙️', label: 'View Customer Report', key: 'viewcustomerreport' },
     ];
 

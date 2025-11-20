@@ -2123,7 +2123,7 @@ const Orders = () => {
                                                     {/* Product Name */}
                                                     <div>
                                                         <label className="block text-xs font-medium text-gray-500 mb-1">
-                                                            Product Name
+                                                            Product/N
                                                         </label>
                                                         <input
                                                             type="text"
@@ -2149,7 +2149,7 @@ const Orders = () => {
                                                     {/* Quantity - Editable */}
                                                     <div>
                                                         <label className="block text-xs font-medium text-gray-500 mb-1">
-                                                            Quantity
+                                                            Qty
                                                         </label>
                                                         <div className="flex gap-1">
                                                             <button
@@ -2176,7 +2176,17 @@ const Orders = () => {
                                                             </button>
                                                         </div>
                                                     </div>
-
+                                                    <div>
+                                                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                                                            Q/in Stock
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={`${Number(item.quantity).toLocaleString()}`}
+                                                            readOnly
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-gray-50"
+                                                        />
+                                                    </div>
                                                     {/* Total & Remove */}
                                                     <div className="flex flex-col gap-1">
                                                         <label className="block text-xs font-medium text-gray-500 mb-1">

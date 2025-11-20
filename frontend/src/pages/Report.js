@@ -105,7 +105,6 @@ const ReportsDashboard = () => {
                 return apiData;
         }
     };
-
     // Sales data transformation
     const transformSalesData = (salesData) => {
         if (!salesData || !Array.isArray(salesData)) {
@@ -566,10 +565,10 @@ const ProductsReport = ({ data }) => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${product.status === "In Stock"
-                                                ? "bg-green-100 text-green-800"
-                                                : product.status === "Low Stock"
-                                                    ? "bg-yellow-100 text-yellow-800"
-                                                    : "bg-red-100 text-red-800"
+                                            ? "bg-green-100 text-green-800"
+                                            : product.status === "Low Stock"
+                                                ? "bg-yellow-100 text-yellow-800"
+                                                : "bg-red-100 text-red-800"
                                             }`}>
                                             {product.status}
                                         </span>
@@ -649,10 +648,10 @@ const InventoryReport = ({ data }) => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${item.status === "Adequate"
-                                                ? "bg-green-100 text-green-800"
-                                                : item.status === "Low Stock"
-                                                    ? "bg-yellow-100 text-yellow-800"
-                                                    : "bg-red-100 text-red-800"
+                                            ? "bg-green-100 text-green-800"
+                                            : item.status === "Low Stock"
+                                                ? "bg-yellow-100 text-yellow-800"
+                                                : "bg-red-100 text-red-800"
                                             }`}>
                                             {item.status}
                                         </span>
@@ -721,10 +720,10 @@ const LowStockReport = ({ data }) => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${product.urgency === "High"
-                                                ? "bg-red-100 text-red-800"
-                                                : product.urgency === "Medium"
-                                                    ? "bg-orange-100 text-orange-800"
-                                                    : "bg-yellow-100 text-yellow-800"
+                                            ? "bg-red-100 text-red-800"
+                                            : product.urgency === "Medium"
+                                                ? "bg-orange-100 text-orange-800"
+                                                : "bg-yellow-100 text-yellow-800"
                                             }`}>
                                             {product.urgency} Priority
                                         </span>

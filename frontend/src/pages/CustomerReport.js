@@ -56,7 +56,7 @@ const CustomerReportForm = ({ onSuccess }) => {
         if (serverError) setServerError("");
     };
 
-    // ✅ Handle TinyMCE editor change - configured to not add <p> tags
+    // ✅ Handle TinyMCE editor change - FIXED CONFIGURATION
     const handleEditorChange = (content) => {
         setFormData((prev) => ({
             ...prev,
@@ -181,9 +181,7 @@ const CustomerReportForm = ({ onSuccess }) => {
     const characterCount = getPlainTextLength();
 
     return (
-        
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-4 px-4 sm:px-6 lg:px-8">
-        \
             <div className="max-w-2xl mx-auto">
                 <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
                     {/* Header */}
@@ -259,7 +257,7 @@ const CustomerReportForm = ({ onSuccess }) => {
                         {/* Accordion for Products */}
                         <div className="border rounded-lg shadow-sm overflow-hidden">
                             <button
-                                type="button" required ="required"
+                                type="button"
                                 onClick={() => setAccordionOpen(!accordionOpen)}
                                 className="w-full flex justify-between items-center px-3 py-2 bg-gray-100 hover:bg-gray-200 transition text-sm"
                             >
@@ -297,7 +295,7 @@ const CustomerReportForm = ({ onSuccess }) => {
                             )}
                         </div>
 
-                        {/* Message - TinyMCE Editor */}
+                        {/* Message - TinyMCE Editor - FIXED CONFIGURATION */}
                         <div>
                             <label htmlFor="message" className="block text-xs font-medium text-gray-700 mb-1">
                                 💬 Report Message *
@@ -317,17 +315,28 @@ const CustomerReportForm = ({ onSuccess }) => {
                                             'insertdatetime', 'media', 'table', 'help', 'wordcount'
                                         ],
                                         toolbar: 'undo redo | bold italic underline | bullist numlist | removeformat | help',
-                                        forced_root_block: '', // Prevents <p> tags
-                                        force_br_newlines: true, // Uses <br> instead of <p>
-                                        force_p_newlines: false, // Disables <p> tags
-                                        convert_newlines_to_brs: true, // Converts newlines to <br>
-                                        remove_trailing_brs: false, // Keeps trailing <br> tags
+                                        // REMOVED the problematic settings that prevent typing:
+                                        // forced_root_block: '', // This was causing the issue
+                                        // force_br_newlines: true,
+                                        // force_p_newlines: false,
+                                        // convert_newlines_to_brs: true,
+                                        // remove_trailing_brs: false,
+
+                                        // Use standard paragraph formatting instead:
+                                        forced_root_block: 'p', // Use standard <p> tags (default behavior)
+                                        force_br_newlines: false, // Use standard newlines
+                                        force_p_newlines: true, // Use <p> tags for new paragraphs
+                                        convert_newlines_to_brs: false, // Don't convert newlines to <br>
+
                                         content_style: `
                                             body { 
                                                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
                                                 font-size: 13px;
                                                 line-height: 1.5;
                                                 margin: 8px;
+                                            }
+                                            p {
+                                                margin: 0 0 8px 0;
                                             }
                                         `,
                                         placeholder: "Describe the issue, feedback, or report details...",
@@ -336,6 +345,11 @@ const CustomerReportForm = ({ onSuccess }) => {
                                         promotion: false,
                                         paste_as_text: true, // Paste as plain text
                                         paste_data_images: false, // Don't paste images
+                                        // Enable basic editing features:
+                                        browser_spellcheck: true,
+                                        contextmenu: false,
+                                        // Ensure editor is editable:
+                                        readonly: false,
                                     }}
                                 />
                             </div>
