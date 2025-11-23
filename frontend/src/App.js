@@ -43,6 +43,10 @@ import EditProfile from './pages/EditProfile';
 import ReportsDashboard from './pages/Report';
 import StaffPage from './pages/StaffPage';
 import ViewStaff from './pages/ViewStaff';
+import RefundRequestModal from './pages/RefundRequestList';
+import RefundRequestList from './pages/PrinceNegotiation';
+import RefundOrders from './pages/RefundOrders';
+import AdminRefundManagement from './pages/AdminRefundManagement';
 
 
 function App() {
@@ -146,6 +150,20 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <DebtorList />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/refund" element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <RefundOrders />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/adminRefundMagt" element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <AdminRefundManagement />
                 </DashboardLayout>
               </ProtectedRoute>
             } />

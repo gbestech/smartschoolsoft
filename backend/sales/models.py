@@ -89,3 +89,25 @@ class SaleItem(models.Model):
 
     def __str__(self):
         return f"{self.product.name} x {self.qty} @ {self.price}"
+    
+    
+    
+    # sales/models.py
+from django.db import models
+from django.contrib.auth.models import User
+
+class Refund(models.Model):
+    sale = models.ForeignKey('Sale', on_delete=models.CASCADE, related_name='refunds')
+    reason = models.TextField()
+    refund_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    refund_date = models.DateField()
+    processed_by = models.CharField(max_length=100)
+    items_refunded = models.JSONField(default=list)  # Store refunded items as JSON
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-refund_date', '-created_at']
+
+    def __str__(self):
+        return f"Refund #{self.id} - Sale #{self.sale.id} - ₦{self.refund_amount}"

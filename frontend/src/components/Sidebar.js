@@ -10,8 +10,9 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
 
     const userMenuItems = [
         { path: '/dashboard', icon: '📊', label: 'Dashboard', key: 'dashboard' },
-        { path: '/profile', icon: '👤', label: 'Profile', key: 'profile' },
-        { path: '/products', icon: '📦', label: 'Products', key: 'products',
+        // { path: '/profile', icon: '👤', label: 'Profile', key: 'profile' },
+        {
+            path: '/products', icon: '📦', label: 'Products', key: 'products',
             submenu: [
                 // { path: '/products/categories', label: 'Categories', key: 'categories' },
                 // { path: '/products/inventory', label: 'Inventory', key: 'inventory' },
@@ -23,13 +24,16 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
         { path: '/customerReport', icon: '📈', label: 'Customer Report', key: 'reprot' },
         { path: '/messages', icon: '💬', label: 'Messages', key: 'messages' },
         // { path: '/settings', icon: '⚙️', label: 'Settings', key: 'settings' },
-        { path: '/viewCustomerReport', icon: '⚙️', label: 'View Customer Report', key: 'viewcustomerreport' },
+
+
     ];
 
     const adminMenuItems = [
         { path: '/admin', icon: '📊', label: 'Overview', key: 'overview' },
+        { path: '/dashboard', icon: '📊', label: 'Dashboard', key: 'dashboard' },
         { path: '/admin/users', icon: '👥', label: 'User Management', key: 'users' },
-        {path: '/admin/products',icon: '📦',label: 'Products',key: 'products',
+        {
+            path: '/admin/products', icon: '📦', label: 'Products', key: 'products',
             submenu: [
                 { path: '/admin/products/all', label: 'All Products', key: 'all-products' },
                 { path: '/inventory', icon: '📈', label: 'All Inventory', key: 'all-inventory' },
@@ -40,7 +44,8 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
             ]
         },
         // HR Management Menu with Submenus
-        { path: '/admin/hr', icon: '👥', label: 'HR Management', key: 'hr',
+        {
+            path: '/admin/hr', icon: '👥', label: 'HR Management', key: 'hr',
             submenu: [
                 { path: '/admin/hr/view-staff', icon: '👥', label: 'View Staff', key: 'view-staff' },
                 { path: '/admin/hr/add-staff', icon: '➕', label: 'Add Staff', key: 'add-staff' },
@@ -51,9 +56,11 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
             ]
         },
         // { path: '/reports', icon: '📈', label: 'Reports', key: 'reports' },
-        { path: '/admin/settings', icon: '⚙️', label: 'System Settings', key: 'settings' },
+        // { path: '/admin/settings', icon: '⚙️', label: 'System Settings', key: 'settings' },
         { path: '/activitylogs', icon: '📋', label: 'Activity Logs', key: 'activitylogs' },
         { path: '/debtors', icon: '💳', label: 'Debtors', key: 'debtor' },
+        { path: '/refund', icon: '💳', label: 'Refund', key: 'refund' },
+        { path: '/adminRefundMagt', icon: '💳', label: 'Refund Management', key: 'refund' },
         { path: '/customerReport', icon: '📈', label: 'Customer Report', key: 'reprot' },
         { path: '/viewCustomerReport', icon: '⚙️', label: 'View Customer Report', key: 'viewcustomerreport' },
         { path: '/supplier', icon: '📈', label: 'Supplier', key: 'supplier' },

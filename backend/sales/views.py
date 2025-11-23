@@ -217,7 +217,10 @@ from product.models import Product
 from .serializers import SaleSerializer, SaleItemSerializer
 from django.db import transaction
 import json
-
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from .models import Refund, Sale
+from .serializers import RefundSerializer
 
 # ✅ List all sales OR create a new sale
 @api_view(["GET", "POST"])
@@ -463,3 +466,41 @@ def sales_statistics(request):
         'total_balance': float(total_balance),
         'payment_methods': list(payment_stats)
     })
+    
+    
+    
+   # sales/views.py
+
+
+class RefundCreateView(generics.CreateAPIView):
+    queryset = Refund.objects.all()
+    serializer_class = RefundSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Set the processed_by field to current user's username
+        serializer.save(processed_by=self.request.user.username)
+        
+        # Update the sale status
+        sale = serializer.validated_data['sale']
+        refund_amount = serializer.validated_data['refund_amount']
+        
+        # Update sale amount_paid and set refund status
+        new_amount_paid = sale.amount_paid - refund_amount
+        is_fully_refunded = new_amount_paid == 0
+        
+        sale.amount_paid = max(new_amount_paid, 0)
+        sale.is_refunded = is_fully_refunded
+        sale.is_partially_refunded = not is_fully_refunded and new_amount_paid > 0
+        sale.refund_reason = serializer.validated_data['reason']
+        sale.save()
+
+class RefundListView(generics.ListAPIView):
+    queryset = Refund.objects.all()
+    serializer_class = RefundSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class RefundDetailView(generics.RetrieveAPIView):
+    queryset = Refund.objects.all()
+    serializer_class = RefundSerializer
+    permission_classes = [permissions.IsAuthenticated] 

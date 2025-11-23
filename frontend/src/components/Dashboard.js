@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -144,7 +143,7 @@ const Dashboard = () => {
     };
 
     const handleViewDebtors = () => {
-        navigate('/sales');
+        navigate('/debtors');
     };
 
     const handleAddProduct = () => {
@@ -152,7 +151,7 @@ const Dashboard = () => {
             alert('You do not have permission to add products');
             return;
         }
-        navigate('/products/new');
+        navigate('/admin/products/add');
     };
 
     const handleEditProduct = () => {
@@ -160,7 +159,7 @@ const Dashboard = () => {
             alert('You do not have permission to edit products');
             return;
         }
-        navigate('/products');
+        navigate('/inventory');
     };
 
     const handleDeleteProduct = () => {
@@ -168,7 +167,7 @@ const Dashboard = () => {
             alert('You do not have permission to delete products');
             return;
         }
-        navigate('/products');
+        navigate('/inventory');
     };
 
     const handleManageProducts = () => {
@@ -176,7 +175,7 @@ const Dashboard = () => {
             alert('You do not have permission to manage products');
             return;
         }
-        navigate('/products');
+        navigate('/inventory');
     };
 
     const formatCurrency = (amount) => {
